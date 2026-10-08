@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActiveTab, Product } from './types';
-import { PRODUCTS_CATALOG } from './data/fashionData';
+import { PRODUCTS_CATALOG } from './data/catalog';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
 import { CatalogView } from './components/CatalogView';
@@ -17,25 +17,11 @@ export default function App() {
   const [currentProduct, setCurrentProduct] = useState<Product>(PRODUCTS_CATALOG[0]);
   
   // Shopping Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 'cart-init-1',
-      productId: PRODUCTS_CATALOG[2].id,
-      title: PRODUCTS_CATALOG[2].title,
-      price: PRODUCTS_CATALOG[2].price,
-      image: PRODUCTS_CATALOG[2].heroImage,
-      colorName: 'Blanco Tiza & Verde',
-      size: '42 EU',
-      quantity: 1
-    }
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Favorites / Wishlist state
-  const [favorites, setFavorites] = useState<Product[]>([
-    PRODUCTS_CATALOG[0],
-    PRODUCTS_CATALOG[1]
-  ]);
+  const [favorites, setFavorites] = useState<Product[]>([]);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
   // Checkout Modal state
@@ -48,14 +34,24 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Close the topmost overlay with Escape
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (isCheckoutOpen) return; // the checkout resets its own step through its close button
+      setIsCartOpen(false);
+      setIsWishlistOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isCheckoutOpen]);
+
   // Cart operations
   const handleAddToCart = (product: Product, size: string, colorName: string, image: string) => {
     setCartItems(prev => {
       const existingIndex = prev.findIndex(item => item.productId === product.id && item.size === size && item.colorName === colorName);
       if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex].quantity += 1;
-        return next;
+        return prev.map((item, i) => i === existingIndex ? { ...item, quantity: item.quantity + 1 } : item);
       }
       return [
         ...prev,
@@ -94,7 +90,8 @@ export default function App() {
   // Direct Buy Now (1 click buy)
   const handleDirectBuyNow = (product: Product, size: string, colorName: string, image: string) => {
     handleAddToCart(product, size, colorName, image);
-    const subtotal = product.price;
+    // The order covers the whole bag, so the total must include what was already in it
+    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + product.price;
     const shippingCost = subtotal >= 49 ? 0 : 4.95;
     setCheckoutTotals({
       subtotal,
@@ -154,15 +151,16 @@ export default function App() {
   const isCurrentProductFavorite = favorites.some(p => p.id === currentProduct.id);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafaf9] text-stone-900 selection:bg-stone-900 selection:text-white pb-16 lg:pb-0">
+    <div className="min-h-screen flex flex-col bg-cream text-ink pb-20 lg:pb-0">
       {/* Top Header */}
       <Navbar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        onSelectCategoryFilter={(cat) => {
-          setCategoryFilter(cat);
-          setActiveTab('catalog');
+        categoryFilter={categoryFilter}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
+        onSelectCategoryFilter={handleNavigateToCategory}
         cartCount={cartTotalCount}
         wishlistCount={favorites.length}
         onOpenCart={() => setIsCartOpen(true)}
@@ -177,15 +175,16 @@ export default function App() {
           <HomeView
             onSelectProduct={handleSelectProduct}
             onNavigateToCategory={handleNavigateToCategory}
-            onAddToCart={handleAddToCart}
+            favorites={favorites}
+            onToggleFavorite={handleToggleFavorite}
           />
         )}
 
         {activeTab === 'catalog' && (
           <CatalogView
             onSelectProduct={handleSelectProduct}
-            onAddToCart={handleAddToCart}
             searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
             categoryFilter={categoryFilter}
             onCategoryFilterChange={setCategoryFilter}
             favorites={favorites}
@@ -223,7 +222,6 @@ export default function App() {
         favorites={favorites}
         onRemoveFavorite={handleRemoveFavorite}
         onSelectProduct={handleSelectProduct}
-        onAddToCart={handleAddToCart}
       />
 
       {/* Checkout Modal */}
@@ -246,53 +244,30 @@ export default function App() {
         onCompleteOrder={handleCompleteOrder}
       />
 
-      {/* Mobile Bottom Navigation Bar (High Converting Thumb Zone) */}
-      <nav aria-label="Navegación móvil" className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 py-2 px-6 flex items-center justify-around text-xs shadow-lg">
-        <button
-          onClick={() => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className={`flex flex-col items-center gap-1 cursor-pointer ${
-            activeTab === 'home' ? 'text-stone-950 font-bold' : 'text-stone-500'
-          }`}
-        >
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">Inicio</span>
-        </button>
-
-        <button
-          onClick={() => { setActiveTab('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className={`flex flex-col items-center gap-1 cursor-pointer ${
-            activeTab === 'catalog' ? 'text-stone-950 font-bold' : 'text-stone-500'
-          }`}
-        >
-          <Grid className="w-5 h-5" />
-          <span className="text-[10px]">Catálogo</span>
-        </button>
-
-        <button
-          onClick={() => setIsWishlistOpen(true)}
-          className="flex flex-col items-center gap-1 text-stone-500 cursor-pointer relative"
-        >
-          <Heart className="w-5 h-5" />
-          <span className="text-[10px]">Favoritos</span>
-          {favorites.length > 0 && (
-            <span className="absolute -top-1 right-2 w-3.5 h-3.5 bg-rose-500 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
-              {favorites.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="flex flex-col items-center gap-1 text-stone-500 cursor-pointer relative"
-        >
-          <ShoppingBag className="w-5 h-5" />
-          <span className="text-[10px]">Bolsa</span>
-          {cartTotalCount > 0 && (
-            <span className="absolute -top-1 right-1 w-3.5 h-3.5 bg-stone-950 text-white rounded-full text-[9px] font-bold flex items-center justify-center">
-              {cartTotalCount}
-            </span>
-          )}
-        </button>
+      {/* Mobile bottom navigation */}
+      <nav aria-label="Navegación móvil" className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-ink text-white rounded-full border-2 border-ink shadow-pop px-2 py-1.5 flex items-center justify-around">
+        {[
+          { label: 'Inicio', icon: Home, active: activeTab === 'home', onClick: () => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+          { label: 'Catálogo', icon: Grid, active: activeTab === 'catalog', onClick: () => handleNavigateToCategory('all') },
+          { label: 'Favoritos', icon: Heart, active: isWishlistOpen, badge: favorites.length, onClick: () => setIsWishlistOpen(true) },
+          { label: 'Bolsa', icon: ShoppingBag, active: isCartOpen, badge: cartTotalCount, onClick: () => setIsCartOpen(true) }
+        ].map(({ label, icon: Icon, active, badge, onClick }) => (
+          <button
+            key={label}
+            onClick={onClick}
+            className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
+              active ? 'bg-lime text-ink' : 'text-white/80'
+            }`}
+          >
+            <Icon className="w-5 h-5" />
+            <span>{label}</span>
+            {!!badge && (
+              <span className="absolute top-0 right-2 min-w-4.5 h-4.5 px-1 bg-bubble text-white rounded-full text-[10px] font-extrabold flex items-center justify-center">
+                {badge}
+              </span>
+            )}
+          </button>
+        ))}
       </nav>
 
       {/* Footer */}

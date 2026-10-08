@@ -37,6 +37,8 @@ export interface Product {
   isNew?: boolean;
   isBestSeller?: boolean;
   badge?: string;
+  /** Background colour of the product card, matching the colourway */
+  cardColor: string;
   rating: number;
   reviewCount: number;
   colors: ProductVariant[];
@@ -72,34 +74,11 @@ export interface Product {
   }[];
 }
 
-export interface CategoryTreeItem {
-  id: string;
-  name: string;
-  iconName: string;
+export interface SneakerStyle {
   slug: string;
-  description: string;
-  badge?: string;
-  subcategories: {
-    name: string;
-    slug: string;
-    description: string;
-    popular?: boolean;
-  }[];
-}
-
-export interface VisualGuideShot {
-  id: string;
-  title: string;
-  purpose: string;
-  exampleImage: string;
-  specs: {
-    angle: string;
-    lighting: string;
-    background: string;
-    modelDirection: string;
-  };
-  dos: string[];
-  donts: string[];
+  name: string;
+  tagline: string;
+  color: string;
 }
 
 export type ActiveTab = 'home' | 'catalog' | 'pdp';

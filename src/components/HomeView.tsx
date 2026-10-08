@@ -1,345 +1,216 @@
 import React from 'react';
 import { Product } from '../types';
-import { PRODUCTS_CATALOG } from '../data/fashionData';
-import { ArrowRight, Sparkles, Truck, RotateCcw, ShieldCheck, Heart, Star, ShoppingBag } from 'lucide-react';
+import { PRODUCTS_CATALOG, SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
+import { ArrowRight, Truck, RotateCcw, CreditCard, Sparkles, Star } from 'lucide-react';
+import { ProductCard } from './ProductCard';
 
 interface HomeViewProps {
   onSelectProduct: (product: Product) => void;
   onNavigateToCategory: (category: string) => void;
-  onAddToCart: (product: Product, size: string, colorName: string, image: string) => void;
+  favorites: Product[];
+  onToggleFavorite: (product: Product) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onSelectProduct,
   onNavigateToCategory,
-  onAddToCart
+  favorites,
+  onToggleFavorite
 }) => {
-  const topSellers = PRODUCTS_CATALOG.slice(0, 4);
+  const hero = PRODUCTS_CATALOG.find((p) => p.isBestSeller) ?? PRODUCTS_CATALOG[0];
+  const hotPicks = PRODUCTS_CATALOG.filter((p) => p.badge).slice(0, 4);
+  const firstOfStyle = (slug: string) => PRODUCTS_CATALOG.find((p) => p.category === slug);
 
   return (
-    <div className="space-y-16 pb-12">
-      {/* Editorial Hero Banner */}
-      <section className="relative overflow-hidden bg-stone-900 text-white min-h-[540px] flex items-center">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1920&q=80"
-            alt="Moda Casual NOMAD"
-            className="w-full h-full object-cover object-center opacity-40 mix-blend-luminosity scale-105 transition-transform duration-1000"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/70 to-transparent" />
-        </div>
+    <div className="space-y-20 pb-20">
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="relative overflow-hidden rounded-[2rem] border-2 border-ink bg-grape text-white shadow-pop-lg">
+          <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-bubble/60 blur-3xl" aria-hidden="true" />
+          <div className="absolute -left-10 bottom-0 w-64 h-64 rounded-full bg-pool/40 blur-3xl" aria-hidden="true" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-amber-300">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Drop de Temporada 2026 · Edición Limitada</span>
+          <div className="relative grid lg:grid-cols-2 gap-8 items-center p-6 sm:p-10 lg:p-14">
+            <div className="space-y-6">
+              <span className="inline-flex items-center gap-2 bg-lime text-ink border-2 border-ink rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-wider shadow-pop-sm -rotate-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                Nueva temporada 2026
+              </span>
+              <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[0.95]">
+                Pisa fuerte.
+                <br />
+                <span className="text-lime">Pisa con estilo.</span>
+              </h1>
+              <p className="text-base sm:text-lg text-white/85 max-w-md">
+                Running, urbanos, basket, retro y skate. Tenis cómodos y con colores que se notan, elegidos para tu día a día.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => onNavigateToCategory('all')}
+                  className="inline-flex items-center gap-2 bg-lime text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
+                >
+                  Ver todos los tenis
+                  <ArrowRight className="w-4.5 h-4.5" strokeWidth={2.5} />
+                </button>
+                <button
+                  onClick={() => onSelectProduct(hero)}
+                  className="inline-flex items-center gap-2 bg-white text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
+                >
+                  {hero.title}: ${hero.price.toFixed(2)}
+                </button>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-white/85">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-sun text-sun" />
+                  ))}
+                </div>
+                <span><strong className="text-white">4.8/5</strong> en más de 2.000 opiniones</span>
+              </div>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight text-white leading-tight">
-              Prendas para vivir en movimiento.
-            </h1>
-
-            <p className="text-stone-300 text-sm sm:text-base leading-relaxed max-w-lg">
-              Denim pesado noventero, tejidos orgánicos prelavados y zapatillas con suela amortiguada. Moda casual honesta pensada para el día a día.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={() => onNavigateToCategory('mujer')}
-                className="px-6 py-3 bg-white text-stone-950 hover:bg-stone-100 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95"
-              >
-                Colección Mujer
-              </button>
-
-              <button
-                onClick={() => onNavigateToCategory('hombre')}
-                className="px-6 py-3 bg-stone-800/90 text-white hover:bg-stone-700 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer backdrop-blur-sm border border-stone-700 active:scale-95"
-              >
-                Colección Hombre
-              </button>
-
-              <button
-                onClick={() => onNavigateToCategory('calzado')}
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-lg active:scale-95"
-              >
-                Sneakers & Zapatos
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Pillars */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-white rounded-2xl border border-stone-200 shadow-xs text-xs">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-900 shrink-0">
-              <Truck className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-bold text-stone-900 text-sm">Envíos Express 24-48h</h4>
-              <p className="text-stone-500 mt-0.5">Gratis en todos los pedidos a partir de $49.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-900 shrink-0">
-              <RotateCcw className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-bold text-stone-900 text-sm">30 Días para Cambios Gratis</h4>
-              <p className="text-stone-500 mt-0.5">Pruébatelo en casa; si la talla no encaja, te la cambiamos sin coste.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center text-stone-900 shrink-0">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-bold text-stone-900 text-sm">Pago Flexible y Protegido</h4>
-              <p className="text-stone-500 mt-0.5">3 plazos sin intereses con Klarna, PayPal o tarjeta bancaria.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Visual Category Shortcuts */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-widest block mb-1">
-              Explora por Categoría
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900">
-              Colecciones Esenciales
-            </h2>
-          </div>
-          <button
-            onClick={() => onNavigateToCategory('all')}
-            className="text-xs font-bold text-stone-900 hover:text-stone-600 flex items-center gap-1 cursor-pointer"
-          >
-            Ver Todo el Catálogo <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              id: 'mujer',
-              name: 'Mujer',
-              subtitle: 'Vestidos, denim & tops fluidos',
-              image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=800&q=80'
-            },
-            {
-              id: 'hombre',
-              name: 'Hombre',
-              subtitle: 'Cargos, hoodies & corte boxy',
-              image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=800&q=80'
-            },
-            {
-              id: 'calzado',
-              name: 'Calzado Urbano',
-              subtitle: 'Retro sneakers & suelas cupsole',
-              image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80'
-            },
-            {
-              id: 'drops',
-              name: 'Drops & Básicos 450 GSM',
-              subtitle: 'Ediciones limitadas de temporada',
-              image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80'
-            }
-          ].map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => onNavigateToCategory(cat.id)}
-              className="group relative aspect-3/4 rounded-2xl overflow-hidden bg-stone-100 cursor-pointer shadow-xs hover:shadow-lg transition-all"
+            <button
+              type="button"
+              onClick={() => onSelectProduct(hero)}
+              className="relative mx-auto w-full max-w-md aspect-square cursor-pointer group"
+              aria-label={`Ver ${hero.title}`}
             >
-              <img
-                src={cat.image}
-                alt={cat.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent" />
-              <div className="absolute bottom-5 inset-x-5 text-white space-y-1">
-                <h3 className="font-display font-bold text-lg sm:text-xl">{cat.name}</h3>
-                <p className="text-xs text-stone-300">{cat.subtitle}</p>
-                <span className="text-[11px] font-semibold text-amber-300 flex items-center gap-1 pt-1 group-hover:translate-x-1 transition-transform">
-                  Descubrir prendas <ArrowRight className="w-3 h-3" />
+              <div className="absolute inset-4 rounded-[2rem] bg-sun border-2 border-ink rotate-6" aria-hidden="true" />
+              <div className="absolute inset-4 rounded-[2rem] overflow-hidden border-2 border-ink -rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-bubble-soft">
+                <img src={hero.heroImage} alt={hero.title} className="w-full h-full object-cover" />
+              </div>
+              <span className="absolute -bottom-1 -left-1 sm:left-0 bg-white text-ink border-2 border-ink rounded-2xl px-4 py-2 shadow-pop text-left">
+                <span className="block text-xs font-bold uppercase tracking-wider text-grape">Top ventas</span>
+                <span className="block font-display text-xl font-extrabold">{hero.title}</span>
+              </span>
+              {hero.originalPrice && (
+                <span className="absolute top-0 right-0 w-20 h-20 rounded-full bg-bubble text-white border-2 border-ink shadow-pop flex flex-col items-center justify-center rotate-12 font-display font-extrabold leading-none">
+                  <span className="text-2xl">-{Math.round((1 - hero.price / hero.originalPrice) * 100)}%</span>
                 </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Perks */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { icon: Truck, title: 'Envío gratis', text: `En pedidos desde $${BRAND_INFO.freeShippingFrom}, en 24/48h.`, bg: 'bg-lime-soft' },
+            { icon: RotateCcw, title: 'Cambios fáciles', text: '30 días para cambiar de talla sin costo.', bg: 'bg-pool-soft' },
+            { icon: CreditCard, title: 'Paga a tu ritmo', text: '3 cuotas sin intereses con Klarna o PayPal.', bg: 'bg-sun-soft' }
+          ].map(({ icon: Icon, title, text, bg }) => (
+            <div key={title} className={`flex items-center gap-4 p-5 rounded-3xl border-2 border-ink ${bg}`}>
+              <span className="w-12 h-12 shrink-0 rounded-2xl bg-white border-2 border-ink flex items-center justify-center shadow-pop-sm">
+                <Icon className="w-5 h-5" strokeWidth={2.5} />
+              </span>
+              <div>
+                <h2 className="font-display text-lg font-extrabold">{title}</h2>
+                <p className="text-sm text-ink/70">{text}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Flagship Products (Top Sellers) */}
+      {/* Shop by style */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold text-amber-700 uppercase tracking-widest block mb-1">
-              Favoritos de la Comunidad
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900">
-              Lo Más Vendido Esta Semana
-            </h2>
+            <p className="text-sm font-extrabold uppercase tracking-wider text-grape">Elige tu vibra</p>
+            <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Compra por estilo</h2>
           </div>
           <button
             onClick={() => onNavigateToCategory('all')}
-            className="text-xs font-bold text-stone-900 hover:text-stone-600 flex items-center gap-1 cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 font-extrabold underline decoration-2 underline-offset-4 hover:text-grape cursor-pointer"
           >
-            Ver todos los favoritos <ArrowRight className="w-3.5 h-3.5" />
+            Ver todo <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {topSellers.map((product) => {
-            const discountPercent = product.originalPrice
-              ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-              : null;
-
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {SNEAKER_STYLES.map((style, i) => {
+            const sample = firstOfStyle(style.slug);
             return (
-              <div
-                key={product.id}
-                className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-stone-400 hover:shadow-md transition-all flex flex-col justify-between"
+              <button
+                key={style.slug}
+                onClick={() => onNavigateToCategory(style.slug)}
+                className={`group relative overflow-hidden rounded-3xl border-2 border-ink shadow-pop hover:shadow-pop-lg hover:-translate-y-1 transition-all text-left cursor-pointer ${
+                  i === 0 ? 'col-span-2 lg:col-span-1' : ''
+                }`}
+                style={{ backgroundColor: style.color }}
               >
-                <div
-                  onClick={() => onSelectProduct(product)}
-                  className="relative aspect-4/5 bg-stone-100 overflow-hidden cursor-pointer"
-                >
-                  <img
-                    src={product.heroImage}
-                    alt={product.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {product.badge && (
-                    <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-stone-900 text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
-                      {product.badge}
-                    </span>
-                  )}
-                  {discountPercent && (
-                    <span className="absolute top-3 right-3 bg-rose-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
-                      -{discountPercent}%
-                    </span>
-                  )}
+                <div className="p-4 pb-0 space-y-1">
+                  <h3 className="font-display text-2xl font-extrabold">{style.name}</h3>
+                  <p className="text-sm font-medium text-ink/75">{style.tagline}</p>
                 </div>
-
-                <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                  <div>
-                    <p className="text-[11px] text-stone-500">{product.subcategory} · {product.targetGender}</p>
-                    <h3
-                      onClick={() => onSelectProduct(product)}
-                      className="font-display font-semibold text-stone-900 text-sm hover:text-stone-700 cursor-pointer line-clamp-1 mt-0.5"
-                    >
-                      {product.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 line-clamp-1">{product.subtitle}</p>
-
-                    <div className="flex items-center gap-1 text-[11px] text-amber-500 mt-1">
-                      <Star className="w-3 h-3 fill-current" />
-                      <span className="font-semibold text-stone-800">{product.rating}</span>
-                      <span className="text-stone-400">({product.reviewCount})</span>
-                    </div>
+                {sample && (
+                  <div className="m-4 aspect-[4/3] rounded-2xl overflow-hidden border-2 border-ink bg-white">
+                    <img
+                      src={sample.heroImage}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
                   </div>
-
-                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-bold text-stone-900 text-base">${product.price.toFixed(2)}</span>
-                        {product.originalPrice && (
-                          <span className="text-xs text-stone-400 line-through">${product.originalPrice.toFixed(2)}</span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-stone-500 block">3x ${(product.price / 3).toFixed(2)}</span>
-                    </div>
-
-                    <button
-                      onClick={() => onSelectProduct(product)}
-                      className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium rounded-lg transition-colors cursor-pointer"
-                    >
-                      Ver Prenda
-                    </button>
-                  </div>
-                </div>
-              </div>
+                )}
+                <span className="absolute top-4 right-4 w-9 h-9 rounded-full bg-ink text-white flex items-center justify-center group-hover:rotate-[-45deg] transition-transform">
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+                </span>
+              </button>
             );
           })}
         </div>
       </section>
 
-      {/* "Get The Look" Showcase */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-stone-100 rounded-3xl p-8 sm:p-12 border border-stone-200 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-6 space-y-4">
-            <span className="text-xs font-bold text-stone-600 uppercase tracking-widest">
-              Estilismo & Streetwear
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 leading-tight">
-              Get The Look: El outfit perfecto en 3 clics.
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
-              Combinamos nuestro Jean Cargo Nomad '98 con las zapatillas Retro Subway '88 y el hoodie de 450 GSM. Prendas diseñadas para combinarse entre sí sin tener que pensar.
-            </p>
-
-            <div className="space-y-2 pt-2">
-              <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-stone-200">
-                <img
-                  src={PRODUCTS_CATALOG[1].heroImage}
-                  alt={PRODUCTS_CATALOG[1].title}
-                  className="w-12 h-14 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h4 className="text-xs font-bold text-stone-900">{PRODUCTS_CATALOG[1].title}</h4>
-                  <p className="text-xs text-stone-700 font-semibold">${PRODUCTS_CATALOG[1].price.toFixed(2)}</p>
-                </div>
-                <button
-                  onClick={() => onSelectProduct(PRODUCTS_CATALOG[1])}
-                  className="text-xs text-stone-900 underline font-medium hover:text-stone-700 cursor-pointer"
-                >
-                  Ver
-                </button>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-stone-200">
-                <img
-                  src={PRODUCTS_CATALOG[2].heroImage}
-                  alt={PRODUCTS_CATALOG[2].title}
-                  className="w-12 h-14 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h4 className="text-xs font-bold text-stone-900">{PRODUCTS_CATALOG[2].title}</h4>
-                  <p className="text-xs text-stone-700 font-semibold">${PRODUCTS_CATALOG[2].price.toFixed(2)}</p>
-                </div>
-                <button
-                  onClick={() => onSelectProduct(PRODUCTS_CATALOG[2])}
-                  className="text-xs text-stone-900 underline font-medium hover:text-stone-700 cursor-pointer"
-                >
-                  Ver
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={() => onNavigateToCategory('drops')}
-                className="px-6 py-3 bg-stone-900 text-white hover:bg-stone-800 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-              >
-                Explorar Todos los Outfits
-              </button>
-            </div>
+      {/* Hot picks */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-extrabold uppercase tracking-wider text-bubble">Lo más buscado</p>
+            <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Los más hot 🔥</h2>
           </div>
-
-          <div className="lg:col-span-6 relative aspect-4/5 rounded-2xl overflow-hidden shadow-xl">
-            <img
-              src="https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1200&q=80"
-              alt="Outfit Completo NOMAD"
-              className="w-full h-full object-cover"
+          <button
+            onClick={() => onNavigateToCategory('all')}
+            className="inline-flex items-center gap-1.5 font-extrabold underline decoration-2 underline-offset-4 hover:text-grape cursor-pointer"
+          >
+            Ver catálogo <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {hotPicks.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onSelect={onSelectProduct}
+              isFavorite={favorites.some((f) => f.id === product.id)}
+              onToggleFavorite={onToggleFavorite}
             />
-            <div className="absolute bottom-4 left-4 bg-stone-900/90 backdrop-blur-xs text-white p-3 rounded-xl text-xs space-y-0.5">
-              <p className="font-bold">Total Outfit: $159.80</p>
-              <p className="text-stone-300 text-[11px]">Ahorro del 15% al comprar el conjunto</p>
-            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Promo banner */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2rem] border-2 border-ink bg-sun p-8 sm:p-12 shadow-pop-lg grid md:grid-cols-[1fr_auto] gap-6 items-center">
+          <div className="space-y-3">
+            <h2 className="font-display text-4xl sm:text-5xl font-extrabold leading-none">
+              -10% en tu primer par
+            </h2>
+            <p className="text-base font-medium text-ink/80 max-w-lg">
+              Usa el código en la bolsa y estrena tenis por menos. Válido en todo el catálogo.
+            </p>
+          </div>
+          <div className="flex flex-col items-start md:items-end gap-3">
+            <span className="font-display text-3xl font-extrabold bg-white border-2 border-dashed border-ink rounded-2xl px-5 py-3 -rotate-2">
+              {BRAND_INFO.welcomeCode}
+            </span>
+            <button
+              onClick={() => onNavigateToCategory('all')}
+              className="inline-flex items-center gap-2 bg-ink text-white rounded-full px-6 py-3.5 font-extrabold hover:bg-grape transition-colors cursor-pointer"
+            >
+              Usar ahora <ArrowRight className="w-4.5 h-4.5" />
+            </button>
           </div>
         </div>
       </section>
