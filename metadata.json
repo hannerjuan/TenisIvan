@@ -1,0 +1,6 @@
+{
+  "name": "ModaCraft UX & Catálogo E-commerce",
+  "description": "Guía maestra de UX/UI y Copywriting de moda casual y calzado con catálogo web interactivo, arquitectura de información y fichas de producto optimizadas para conversión.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
