@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ActiveTab, Product } from './types';
-import { PRODUCTS_CATALOG } from './data/catalog';
+import { ActiveTab, Product, ProductColor } from './types';
+import { useCatalog } from './context/CatalogContext';
+import { unitsFor } from './utils/inventory';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
 import { CatalogView } from './components/CatalogView';
@@ -10,37 +11,33 @@ import { WishlistDrawer } from './components/WishlistDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Footer } from './components/Footer';
 import { PaymentResultModal } from './components/PaymentResultModal';
-import { AdminOrdersView } from './components/AdminOrdersView';
+import { AdminPanel } from './components/admin/AdminPanel';
 import { fetchPaymentResult, isLivePayments, PaymentResult } from './utils/payments';
 import { loadJSON, saveJSON } from './utils/storage';
 import { Home, Grid, Heart, ShoppingBag } from 'lucide-react';
 
 const CART_KEY = 'tenisivan:cart';
 const FAVORITES_KEY = 'tenisivan:favorites';
+const ADMIN_HASHES = ['#admin', '#pedidos'];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [currentProduct, setCurrentProduct] = useState<Product>(PRODUCTS_CATALOG[0]);
-  
-  // Shopping Cart state
+  const { products, status: catalogStatus } = useCatalog();
+  const [currentProductId, setCurrentProductId] = useState<string | null>(null);
+  const currentProduct = products.find((p) => p.id === currentProductId) ?? null;
+
   // Persisted so the bag survives the round trip to the payment gateway
   const [cartItems, setCartItems] = useState<CartItem[]>(() =>
-    loadJSON<CartItem[]>(CART_KEY, [])
-      .filter((item) => PRODUCTS_CATALOG.some((p) => p.id === item.productId))
-      .map((item) => {
-        const product = PRODUCTS_CATALOG.find((p) => p.id === item.productId)!;
-        return { ...item, title: product.title, price: product.price };
-      })
+    loadJSON<CartItem[]>(CART_KEY, []).filter((item) => item && item.productId && item.colorId)
   );
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Favorites / Wishlist state
-  const [favorites, setFavorites] = useState<Product[]>(() =>
-    loadJSON<string[]>(FAVORITES_KEY, [])
-      .map((id) => PRODUCTS_CATALOG.find((p) => p.id === id))
-      .filter((p): p is Product => Boolean(p))
-  );
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => loadJSON<string[]>(FAVORITES_KEY, []));
+  const favorites = favoriteIds
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is Product => Boolean(p));
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
   // Checkout Modal state
@@ -55,15 +52,28 @@ export default function App() {
   const [paymentError, setPaymentError] = useState('');
   const [isPaymentResultOpen, setIsPaymentResultOpen] = useState(Boolean(paymentTransactionId));
 
-  const [isAdminView, setIsAdminView] = useState(() => window.location.hash === '#pedidos');
+  const [isAdminView, setIsAdminView] = useState(() => ADMIN_HASHES.includes(window.location.hash));
 
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => saveJSON(CART_KEY, cartItems), [cartItems]);
-  useEffect(() => saveJSON(FAVORITES_KEY, favorites.map((p) => p.id)), [favorites]);
+  useEffect(() => saveJSON(FAVORITES_KEY, favoriteIds), [favoriteIds]);
+
+  // Once the catalog loads, refresh bag prices and drop pairs that are gone or out of stock
+  useEffect(() => {
+    if (catalogStatus !== 'ready' && catalogStatus !== 'sample') return;
+    setCartItems((prev) =>
+      prev.flatMap((item) => {
+        const product = products.find((p) => p.id === item.productId);
+        const units = product ? unitsFor(product, item.colorId, item.size) : 0;
+        if (!product || units === 0) return [];
+        return [{ ...item, title: product.title, price: product.price, quantity: Math.min(item.quantity, units) }];
+      })
+    );
+  }, [products, catalogStatus]);
 
   useEffect(() => {
-    const onHashChange = () => setIsAdminView(window.location.hash === '#pedidos');
+    const onHashChange = () => setIsAdminView(ADMIN_HASHES.includes(window.location.hash));
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -91,12 +101,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isCheckoutOpen]);
 
-  // Cart operations
-  const handleAddToCart = (product: Product, size: string, colorName: string, image: string) => {
-    setCartItems(prev => {
-      const existingIndex = prev.findIndex(item => item.productId === product.id && item.size === size && item.colorName === colorName);
-      if (existingIndex > -1) {
-        return prev.map((item, i) => i === existingIndex ? { ...item, quantity: item.quantity + 1 } : item);
+  // Cart operations: quantities never go above the units in stock
+  const stockFor = (productId: string, colorId: string, size: string) => {
+    const product = products.find((p) => p.id === productId);
+    return product ? unitsFor(product, colorId, size) : 0;
+  };
+
+  const handleAddToCart = (product: Product, size: string, color: ProductColor, quantity = 1) => {
+    const max = unitsFor(product, color.id, size);
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.productId === product.id && item.size === size && item.colorId === color.id);
+      if (existing) {
+        return prev.map((item) => (item === existing ? { ...item, quantity: Math.min(max, item.quantity + quantity) } : item));
       }
       return [
         ...prev,
@@ -105,37 +121,34 @@ export default function App() {
           productId: product.id,
           title: product.title,
           price: product.price,
-          image,
-          colorName,
+          image: color.images[0] ?? '',
+          colorId: color.id,
+          colorName: color.name,
           size,
-          quantity: 1
+          quantity: Math.min(max, quantity)
         }
       ];
     });
   };
 
   const handleUpdateQuantity = (id: string, delta: number) => {
-    setCartItems(prev => 
-      prev
-        .map(item => {
-          if (item.id === id) {
-            const nextQty = item.quantity + delta;
-            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
+    setCartItems((prev) =>
+      prev.flatMap((item) => {
+        if (item.id !== id) return [item];
+        const next = Math.min(item.quantity + delta, stockFor(item.productId, item.colorId, item.size));
+        return next > 0 ? [{ ...item, quantity: next }] : [];
+      })
     );
   };
 
   const handleRemoveItem = (id: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   // Direct Buy Now (1 click buy)
-  const handleDirectBuyNow = (product: Product, size: string, colorName: string, image: string) => {
+  const handleDirectBuyNow = (product: Product, size: string, color: ProductColor) => {
     // The order covers the whole bag; the checkout totals it from the updated cart
-    handleAddToCart(product, size, colorName, image);
+    handleAddToCart(product, size, color);
     setCheckoutCoupon('');
     setIsCheckoutOpen(true);
   };
@@ -153,23 +166,17 @@ export default function App() {
 
   // Wishlist toggle
   const handleToggleFavorite = (product: Product) => {
-    setFavorites(prev => {
-      const exists = prev.some(p => p.id === product.id);
-      if (exists) {
-        return prev.filter(p => p.id !== product.id);
-      }
-      return [...prev, product];
-    });
+    setFavoriteIds((prev) => (prev.includes(product.id) ? prev.filter((id) => id !== product.id) : [...prev, product.id]));
   };
 
   const handleRemoveFavorite = (id: string) => {
-    setFavorites(prev => prev.filter(p => p.id !== id));
+    setFavoriteIds((prev) => prev.filter((favoriteId) => favoriteId !== id));
   };
 
   // Navigation handlers
   const handleSelectProduct = (product: Product) => {
     leaveAdminView();
-    setCurrentProduct(product);
+    setCurrentProductId(product.id);
     setActiveTab('pdp');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -196,7 +203,7 @@ export default function App() {
   };
 
   const cartTotalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const isCurrentProductFavorite = favorites.some(p => p.id === currentProduct.id);
+  const isCurrentProductFavorite = Boolean(currentProduct && favoriteIds.includes(currentProduct.id));
 
   return (
     <div className="min-h-screen flex flex-col bg-cream text-ink pb-20 lg:pb-0">
@@ -220,7 +227,7 @@ export default function App() {
 
       {/* Main Content Router */}
       <main className="flex-1">
-        {isAdminView && <AdminOrdersView />}
+        {isAdminView && <AdminPanel />}
 
         {!isAdminView && activeTab === 'home' && (
           <HomeView
@@ -243,7 +250,7 @@ export default function App() {
           />
         )}
 
-        {!isAdminView && activeTab === 'pdp' && (
+        {!isAdminView && activeTab === 'pdp' && currentProduct && (
           <ProductDetailView
             currentProduct={currentProduct}
             onSelectProduct={handleSelectProduct}

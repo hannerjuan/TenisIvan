@@ -9,7 +9,7 @@ Precios en pesos colombianos (COP) y tallas colombianas.
 - Ficha de producto con galería por color, selector de talla, guía de tallas (largo del pie → talla COL) y opiniones.
 - Favoritos, bolsa de compra con cupón (`BIENVENIDA10`) y envío gratis desde $ 250.000.
 - Checkout en dos pasos (envío y pago) con **PSE, Nequi y tarjeta** a través de Wompi.
-- Página privada de pedidos en `/#pedidos`.
+- Panel de administración en `/#admin`: productos, fotos, inventario por color y talla, y pedidos.
 
 ## Ejecutar en local
 
@@ -33,7 +33,7 @@ Abre http://localhost:3000.
 
 ## Dónde cambiar cosas
 
-- Productos, precios y tallas: `src/data/catalog.ts`
+- Productos, precios, fotos e inventario: desde el panel `/#admin` (el catálogo de ejemplo está en `src/data/catalog.ts`)
 - Colores y tipografías de la marca: `src/index.css`
 - Formato de moneda: `src/utils/format.ts`
 
@@ -57,7 +57,7 @@ Para cobrar de verdad:
    | `WOMPI_PUBLIC_KEY` | tu llave pública |
    | `WOMPI_INTEGRITY_SECRET` | tu secreto de integridad |
    | `WOMPI_EVENTS_SECRET` | tu secreto de eventos |
-   | `ADMIN_TOKEN` | una contraseña larga (12+ caracteres) para ver los pedidos |
+   | `ADMIN_TOKEN` | una contraseña larga (12+ caracteres) para entrar al panel `/#admin` |
 
    Después vuelve a desplegar (*Deploys → Trigger deploy*): `VITE_PAYMENTS_MODE` se aplica al construir.
 4. En Wompi, configura la **URL de eventos**: `https://<tu-sitio>.netlify.app/api/wompi-events`.
@@ -72,6 +72,23 @@ Para cobrar de verdad:
 3. El cliente paga en Wompi con PSE, Nequi o tarjeta y vuelve a la tienda, que muestra el resultado.
 4. Wompi avisa a `/api/wompi-events` (firma verificada) y el pedido pasa a *Pagado* o *Rechazado*.
    Un pago por un monto distinto al del pedido nunca se marca como pagado.
-5. Revisa los pedidos (productos, tallas, dirección y estado) en `https://<tu-sitio>/#pedidos` con tu `ADMIN_TOKEN`.
+5. La primera vez que un pedido queda pagado, sus pares se descuentan del inventario (una sola vez, aunque el
+   webhook y el regreso del cliente lleguen a la vez). Si alguien pagó un par que ya no quedaba, el pedido lo indica.
+6. Revisa los pedidos (productos, tallas, dirección y estado) en la pestaña *Pedidos* de `https://<tu-sitio>/#admin`.
 
 Las llaves secretas viven solo en las variables de entorno de Netlify: nunca las pongas en el código.
+
+## Panel de administración (`/#admin`)
+
+Entra con tu `ADMIN_TOKEN`. Funciona en la tienda publicada en Netlify (en local no hay servidor).
+
+- **Productos e inventario:** crea o edita modelos con nombre, estilo, precio, precio anterior, etiqueta, colores y
+  fotos (se reducen automáticamente antes de subirse), tallas que ofreces y **unidades por color y talla**.
+  Puedes publicar u ocultar cada producto sin borrarlo.
+- **Catálogo vacío:** puedes crear tus productos desde cero o importar los 10 modelos de ejemplo como borradores
+  **ocultos** y editarlos con tus datos reales. Nada se publica sin que tú lo actives.
+- **En la tienda:** las tallas sin unidades salen agotadas, se avisa cuando quedan 3 o menos, y no se puede añadir
+  a la bolsa más de lo que hay. El servidor vuelve a comprobar el stock antes de cobrar.
+- **Pedidos:** lista con productos, tallas, colores, datos de envío y estado del pago.
+
+Los productos y las fotos se guardan en Netlify Blobs; no necesitas otra base de datos.

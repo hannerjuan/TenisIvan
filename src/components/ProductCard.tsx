@@ -1,7 +1,8 @@
 import React from 'react';
-import { Heart, Star, ArrowUpRight } from 'lucide-react';
+import { Heart, ArrowUpRight } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice } from '../utils/format';
+import { isInStock, mainImage, styleName } from '../utils/inventory';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isFavorite = false, onToggleFavorite }) => {
+  const soldOut = !isInStock(product);
   const discountPercent = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
@@ -25,11 +27,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
         aria-label={`Ver ${product.title}`}
       >
         <img
-          src={product.heroImage}
+          src={mainImage(product)}
           alt={product.title}
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-500"
+          className={`w-full h-full object-cover group-hover:scale-105 group-hover:-rotate-2 transition-transform duration-500 ${soldOut ? 'grayscale opacity-70' : ''}`}
         />
+        {soldOut && (
+          <span className="absolute bottom-2.5 left-2.5 text-[11px] font-extrabold uppercase tracking-wide bg-ink text-white px-2.5 py-1 rounded-full">
+            Agotado
+          </span>
+        )}
         <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
           {product.badge && (
             <span className="text-[11px] font-extrabold uppercase tracking-wide bg-sun text-ink border-2 border-ink px-2 py-0.5 rounded-full shadow-pop-sm">
@@ -59,14 +66,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
       )}
 
       <div className="flex-1 flex flex-col gap-2 p-4">
-        <div className="flex items-center justify-between text-xs font-bold">
-          <span className="uppercase tracking-wider text-grape">{product.subcategory}</span>
-          <span className="flex items-center gap-1 text-ink">
-            <Star className="w-3.5 h-3.5 fill-sun text-ink" />
-            {product.rating}
-            <span className="font-medium text-ink/50">({product.reviewCount})</span>
-          </span>
-        </div>
+        <span className="text-xs font-bold uppercase tracking-wider text-grape">
+          {styleName(product.category)} · {product.targetGender}
+        </span>
 
         <h3 className="font-display text-xl font-extrabold leading-tight">
           <button type="button" onClick={() => onSelect(product)} className="text-left hover:text-grape transition-colors cursor-pointer">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Heart, Trash2, ArrowRight } from 'lucide-react';
 import { Product } from '../types';
+import { mainImage } from '../utils/inventory';
 import { formatPrice } from '../utils/format';
 
 interface WishlistDrawerProps {
@@ -65,7 +66,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                     style={{ backgroundColor: product.cardColor }}
                     aria-label={`Ver ${product.title}`}
                   >
-                    <img src={product.heroImage} alt="" className="w-full h-full object-cover" />
+                    <img src={mainImage(product)} alt="" className="w-full h-full object-cover" />
                   </button>
                   <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
                     <div className="flex items-start justify-between gap-2">

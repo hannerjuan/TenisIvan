@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { PRODUCTS_CATALOG, SNEAKER_STYLES } from '../data/catalog';
+import { SNEAKER_STYLES, COL_SIZES } from '../data/catalog';
+import { useCatalog } from '../context/CatalogContext';
+import { isInStock, isSizeAvailable, styleName } from '../utils/inventory';
 import { SearchX, ArrowUpDown, Ruler } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 
@@ -14,9 +16,8 @@ interface CatalogViewProps {
   onToggleFavorite: (product: Product) => void;
 }
 
-type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'rating';
+type SortOption = 'featured' | 'price-asc' | 'price-desc';
 const GENDERS = ['all', 'Mujer', 'Hombre', 'Unisex'] as const;
-const SIZE_OPTIONS = Array.from(new Set(PRODUCTS_CATALOG.flatMap((p) => p.sizes.map((s) => s.size))));
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
   onSelectProduct,
@@ -31,21 +32,22 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [size, setSize] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('featured');
 
+  const { products: catalog, status } = useCatalog();
   const activeStyle = SNEAKER_STYLES.find((s) => s.slug === categoryFilter);
   const query = searchQuery.trim().toLowerCase();
 
-  const products = PRODUCTS_CATALOG.filter((p) => {
-    if (query && ![p.title, p.subtitle, p.subcategory].some((field) => field.toLowerCase().includes(query))) return false;
+  const products = catalog.filter((p) => {
+    if (query && ![p.title, p.subtitle, styleName(p.category)].some((field) => field.toLowerCase().includes(query))) return false;
     if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
     // Unisex pairs show up for everyone
     if (gender !== 'all' && p.targetGender !== gender && p.targetGender !== 'Unisex') return false;
-    if (size !== 'all' && !p.sizes.some((s) => s.size === size && s.available)) return false;
+    if (size !== 'all' && !isSizeAvailable(p, size)) return false;
     return true;
   }).sort((a, b) => {
     if (sortBy === 'price-asc') return a.price - b.price;
     if (sortBy === 'price-desc') return b.price - a.price;
-    if (sortBy === 'rating') return b.rating - a.rating;
-    return 0;
+    // Featured first, sold-out models last
+    return Number(isInStock(b)) - Number(isInStock(a)) || Number(Boolean(b.featured)) - Number(Boolean(a.featured));
   });
 
   const resetFilters = () => {
@@ -83,7 +85,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           className={`${chip(categoryFilter === 'all')} ${categoryFilter === 'all' ? 'bg-ink text-white' : ''}`}
           aria-pressed={categoryFilter === 'all'}
         >
-          Todos ({PRODUCTS_CATALOG.length})
+          Todos ({catalog.length})
         </button>
         {SNEAKER_STYLES.map((style) => {
           const active = categoryFilter === style.slug;
@@ -124,7 +126,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <span className="sr-only">Talla</span>
             <select value={size} onChange={(e) => setSize(e.target.value)} className="bg-transparent focus:outline-hidden cursor-pointer">
               <option value="all">Todas las tallas</option>
-              {SIZE_OPTIONS.map((s) => (
+              {COL_SIZES.map((s) => (
                 <option key={s} value={s}>Talla {s} COL</option>
               ))}
             </select>
@@ -136,7 +138,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               <option value="featured">Destacados</option>
               <option value="price-asc">Precio: menor a mayor</option>
               <option value="price-desc">Precio: mayor a menor</option>
-              <option value="rating">Mejor valorados</option>
             </select>
           </label>
           <span className="text-sm font-bold text-ink/60" aria-live="polite">
@@ -146,7 +147,11 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       </div>
 
       {/* Grid */}
-      {products.length === 0 ? (
+      {status === 'loading' ? (
+        <p className="py-16 text-center font-bold text-ink/60" role="status">Cargando tenis...</p>
+      ) : status === 'error' ? (
+        <p className="py-16 text-center font-bold" role="alert">No pudimos cargar el catálogo. Recarga la página en un momento.</p>
+      ) : products.length === 0 ? (
         <div className="text-center py-16 px-6 bg-white rounded-[2rem] border-2 border-ink shadow-pop space-y-4">
           <span className="mx-auto w-16 h-16 rounded-2xl bg-bubble-soft border-2 border-ink flex items-center justify-center rotate-6">
             <SearchX className="w-7 h-7" />
