@@ -99,7 +99,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {[
             { icon: Truck, title: 'Envío gratis', text: `En pedidos desde ${formatPrice(BRAND_INFO.freeShippingFrom)}, en 24/48h.`, bg: 'bg-lime-soft' },
             { icon: RotateCcw, title: 'Cambios fáciles', text: '30 días para cambiar de talla sin costo.', bg: 'bg-pool-soft' },
-            { icon: CreditCard, title: 'Paga a tu ritmo', text: '3 cuotas sin intereses con Klarna o PayPal.', bg: 'bg-sun-soft' }
+            { icon: CreditCard, title: 'Paga como quieras', text: 'PSE, Nequi o tarjeta, con pago 100% seguro.', bg: 'bg-sun-soft' }
           ].map(({ icon: Icon, title, text, bg }) => (
             <div key={title} className={`flex items-center gap-4 p-5 rounded-3xl border-2 border-ink ${bg}`}>
               <span className="w-12 h-12 shrink-0 rounded-2xl bg-white border-2 border-ink flex items-center justify-center shadow-pop-sm">

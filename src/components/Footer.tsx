@@ -77,10 +77,9 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
         <div className="pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/50">
           <span>© {new Date().getFullYear()} TenisIvan. Todos los derechos reservados.</span>
           <span className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+            <span>PSE</span>
+            <span>Nequi</span>
             <span>Visa / Mastercard</span>
-            <span>PayPal</span>
-            <span>Klarna</span>
-            <span>Apple Pay</span>
           </span>
         </div>
       </div>

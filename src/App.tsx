@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActiveTab, Product } from './types';
-import { PRODUCTS_CATALOG, BRAND_INFO } from './data/catalog';
+import { PRODUCTS_CATALOG } from './data/catalog';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
 import { CatalogView } from './components/CatalogView';
@@ -9,7 +9,14 @@ import { CartDrawer, CartItem } from './components/CartDrawer';
 import { WishlistDrawer } from './components/WishlistDrawer';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Footer } from './components/Footer';
+import { PaymentResultModal } from './components/PaymentResultModal';
+import { AdminOrdersView } from './components/AdminOrdersView';
+import { fetchPaymentResult, isLivePayments, PaymentResult } from './utils/payments';
+import { loadJSON, saveJSON } from './utils/storage';
 import { Home, Grid, Heart, ShoppingBag } from 'lucide-react';
+
+const CART_KEY = 'tenisivan:cart';
+const FAVORITES_KEY = 'tenisivan:favorites';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
@@ -17,22 +24,60 @@ export default function App() {
   const [currentProduct, setCurrentProduct] = useState<Product>(PRODUCTS_CATALOG[0]);
   
   // Shopping Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  // Persisted so the bag survives the round trip to the payment gateway
+  const [cartItems, setCartItems] = useState<CartItem[]>(() =>
+    loadJSON<CartItem[]>(CART_KEY, [])
+      .filter((item) => PRODUCTS_CATALOG.some((p) => p.id === item.productId))
+      .map((item) => {
+        const product = PRODUCTS_CATALOG.find((p) => p.id === item.productId)!;
+        return { ...item, title: product.title, price: product.price };
+      })
+  );
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Favorites / Wishlist state
-  const [favorites, setFavorites] = useState<Product[]>([]);
+  const [favorites, setFavorites] = useState<Product[]>(() =>
+    loadJSON<string[]>(FAVORITES_KEY, [])
+      .map((id) => PRODUCTS_CATALOG.find((p) => p.id === id))
+      .filter((p): p is Product => Boolean(p))
+  );
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
 
   // Checkout Modal state
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [checkoutTotals, setCheckoutTotals] = useState({
-    subtotal: 0,
-    discountAmount: 0,
-    shippingCost: 0
-  });
+  const [checkoutCoupon, setCheckoutCoupon] = useState('');
+
+  // Result of a real payment, shown when Wompi sends the customer back with ?id=<transaction>
+  const [paymentTransactionId] = useState(() =>
+    isLivePayments ? new URLSearchParams(window.location.search).get('id') : null
+  );
+  const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
+  const [paymentError, setPaymentError] = useState('');
+  const [isPaymentResultOpen, setIsPaymentResultOpen] = useState(Boolean(paymentTransactionId));
+
+  const [isAdminView, setIsAdminView] = useState(() => window.location.hash === '#pedidos');
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => saveJSON(CART_KEY, cartItems), [cartItems]);
+  useEffect(() => saveJSON(FAVORITES_KEY, favorites.map((p) => p.id)), [favorites]);
+
+  useEffect(() => {
+    const onHashChange = () => setIsAdminView(window.location.hash === '#pedidos');
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (!paymentTransactionId) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    fetchPaymentResult(paymentTransactionId)
+      .then((result) => {
+        setPaymentResult(result);
+        if (result.status === 'APPROVED') setCartItems([]);
+      })
+      .catch((error: Error) => setPaymentError(error.message));
+  }, [paymentTransactionId]);
 
   // Close the topmost overlay with Escape
   useEffect(() => {
@@ -89,21 +134,15 @@ export default function App() {
 
   // Direct Buy Now (1 click buy)
   const handleDirectBuyNow = (product: Product, size: string, colorName: string, image: string) => {
+    // The order covers the whole bag; the checkout totals it from the updated cart
     handleAddToCart(product, size, colorName, image);
-    // The order covers the whole bag, so the total must include what was already in it
-    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + product.price;
-    const shippingCost = subtotal >= BRAND_INFO.freeShippingFrom ? 0 : BRAND_INFO.shippingCost;
-    setCheckoutTotals({
-      subtotal,
-      discountAmount: 0,
-      shippingCost
-    });
+    setCheckoutCoupon('');
     setIsCheckoutOpen(true);
   };
 
   // Trigger checkout from Cart Drawer
-  const handleStartCheckoutFromCart = (subtotal: number, discountAmount: number, shippingCost: number) => {
-    setCheckoutTotals({ subtotal, discountAmount, shippingCost });
+  const handleStartCheckoutFromCart = (couponCode: string) => {
+    setCheckoutCoupon(couponCode);
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
   };
@@ -129,12 +168,21 @@ export default function App() {
 
   // Navigation handlers
   const handleSelectProduct = (product: Product) => {
+    leaveAdminView();
     setCurrentProduct(product);
     setActiveTab('pdp');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Any storefront navigation leaves the private orders page
+  const leaveAdminView = () => {
+    if (!isAdminView) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    setIsAdminView(false);
+  };
+
   const handleNavigateToCategory = (cat: string) => {
+    leaveAdminView();
     setCategoryFilter(cat);
     setActiveTab('catalog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -157,6 +205,7 @@ export default function App() {
         activeTab={activeTab}
         categoryFilter={categoryFilter}
         onSelectTab={(tab) => {
+          leaveAdminView();
           setActiveTab(tab);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
@@ -171,7 +220,9 @@ export default function App() {
 
       {/* Main Content Router */}
       <main className="flex-1">
-        {activeTab === 'home' && (
+        {isAdminView && <AdminOrdersView />}
+
+        {!isAdminView && activeTab === 'home' && (
           <HomeView
             onSelectProduct={handleSelectProduct}
             onNavigateToCategory={handleNavigateToCategory}
@@ -180,7 +231,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'catalog' && (
+        {!isAdminView && activeTab === 'catalog' && (
           <CatalogView
             onSelectProduct={handleSelectProduct}
             searchQuery={searchQuery}
@@ -192,7 +243,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'pdp' && (
+        {!isAdminView && activeTab === 'pdp' && (
           <ProductDetailView
             currentProduct={currentProduct}
             onSelectProduct={handleSelectProduct}
@@ -228,26 +279,19 @@ export default function App() {
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
-        items={cartItems.length > 0 ? cartItems : [{
-          id: 'temp-1',
-          productId: currentProduct.id,
-          title: currentProduct.title,
-          price: currentProduct.price,
-          image: currentProduct.heroImage,
-          colorName: currentProduct.colors[0]?.name || 'Estándar',
-          size: currentProduct.sizes[0]?.size || 'M',
-          quantity: 1
-        }]}
-        subtotal={checkoutTotals.subtotal}
-        discountAmount={checkoutTotals.discountAmount}
-        shippingCost={checkoutTotals.shippingCost}
+        items={cartItems}
+        couponCode={checkoutCoupon}
         onCompleteOrder={handleCompleteOrder}
       />
+
+      {isPaymentResultOpen && (
+        <PaymentResultModal result={paymentResult} error={paymentError} onClose={() => setIsPaymentResultOpen(false)} />
+      )}
 
       {/* Mobile bottom navigation */}
       <nav aria-label="Navegación móvil" className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-ink text-white rounded-full border-2 border-ink shadow-pop px-2 py-1.5 flex items-center justify-around">
         {[
-          { label: 'Inicio', icon: Home, active: activeTab === 'home', onClick: () => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
+          { label: 'Inicio', icon: Home, active: activeTab === 'home', onClick: () => { leaveAdminView(); setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); } },
           { label: 'Catálogo', icon: Grid, active: activeTab === 'catalog', onClick: () => handleNavigateToCategory('all') },
           { label: 'Favoritos', icon: Heart, active: isWishlistOpen, badge: favorites.length, onClick: () => setIsWishlistOpen(true) },
           { label: 'Bolsa', icon: ShoppingBag, active: isCartOpen, badge: cartTotalCount, onClick: () => setIsCartOpen(true) }
