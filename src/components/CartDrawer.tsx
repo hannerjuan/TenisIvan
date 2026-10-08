@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Trash2, ArrowRight, ShieldCheck, Truck, ShoppingBag, Tag, Check, Minus, Plus } from 'lucide-react';
 import { BRAND_INFO } from '../data/catalog';
 import { formatPrice } from '../utils/format';
+import { calculateTotals, getDiscountRate } from '../utils/pricing';
 
 export interface CartItem {
   id: string;
@@ -20,7 +21,7 @@ interface CartDrawerProps {
   items: CartItem[];
   onUpdateQuantity: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
-  onCheckout: (subtotal: number, discountAmount: number, shippingCost: number) => void;
+  onCheckout: (couponCode: string) => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
@@ -32,27 +33,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onCheckout
 }) => {
   const [couponCode, setCouponCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [appliedCode, setAppliedCode] = useState('');
   const [couponError, setCouponError] = useState('');
   const [couponSuccess, setCouponSuccess] = useState('');
 
   if (!isOpen) return null;
 
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const freeShippingThreshold = BRAND_INFO.freeShippingFrom;
-  const difference = freeShippingThreshold - subtotal;
-  const shippingCost = difference <= 0 ? 0 : BRAND_INFO.shippingCost;
-  const shippingProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
-  const discountAmount = subtotal * appliedDiscount;
-  const finalTotal = subtotal - discountAmount + shippingCost;
+  const { subtotal, discountAmount, shippingCost, total: finalTotal } = calculateTotals(items, appliedCode);
+  const difference = BRAND_INFO.freeShippingFrom - subtotal;
+  const shippingProgress = Math.min(100, Math.round((subtotal / BRAND_INFO.freeShippingFrom) * 100));
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     setCouponError('');
     setCouponSuccess('');
-    const code = couponCode.trim().toUpperCase();
-    if (code === BRAND_INFO.welcomeCode) {
-      setAppliedDiscount(0.10);
+    if (getDiscountRate(couponCode) > 0) {
+      setAppliedCode(couponCode.trim().toUpperCase());
       setCouponSuccess('¡Código aplicado! 10% de descuento');
     } else {
       setCouponError(`Código no válido. Prueba con ${BRAND_INFO.welcomeCode}`);
@@ -189,7 +185,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <dt>Subtotal</dt>
                   <dd>{formatPrice(subtotal)}</dd>
                 </div>
-                {appliedDiscount > 0 && (
+                {discountAmount > 0 && (
                   <div className="flex justify-between font-bold text-grape">
                     <dt>Descuento (10%)</dt>
                     <dd>-{formatPrice(discountAmount)}</dd>
@@ -197,7 +193,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 )}
                 <div className="flex justify-between">
                   <dt>Envío</dt>
-                  <dd>{difference <= 0 ? <strong>GRATIS</strong> : formatPrice(BRAND_INFO.shippingCost)}</dd>
+                  <dd>{shippingCost === 0 ? <strong>GRATIS</strong> : formatPrice(shippingCost)}</dd>
                 </div>
                 <div className="flex justify-between font-display text-2xl font-extrabold pt-2 border-t-2 border-ink">
                   <dt>Total</dt>
@@ -206,7 +202,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </dl>
 
               <button
-                onClick={() => onCheckout(subtotal, discountAmount, shippingCost)}
+                onClick={() => onCheckout(appliedCode)}
                 className="w-full h-14 bg-lime border-2 border-ink rounded-full font-extrabold flex items-center justify-center gap-2 shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 Ir a pagar
@@ -214,7 +210,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </button>
               <p className="flex items-center justify-center gap-1.5 text-xs text-ink/60">
                 <ShieldCheck className="w-4 h-4" />
-                Pago seguro · o 3 cuotas de {formatPrice((finalTotal / 3))} sin intereses
+                Pago seguro con PSE, Nequi o tarjeta
               </p>
             </div>
           )}

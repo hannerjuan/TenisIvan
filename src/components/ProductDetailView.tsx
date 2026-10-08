@@ -225,7 +225,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </>
             )}
             <p className="w-full text-sm text-ink/70">
-              O 3 cuotas de <strong className="text-ink">{formatPrice((currentProduct.price / 3))}</strong> sin intereses.
+              Paga con <strong className="text-ink">PSE, Nequi o tarjeta</strong>.
             </p>
           </div>
 
