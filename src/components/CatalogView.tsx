@@ -125,7 +125,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <select value={size} onChange={(e) => setSize(e.target.value)} className="bg-transparent focus:outline-hidden cursor-pointer">
               <option value="all">Todas las tallas</option>
               {SIZE_OPTIONS.map((s) => (
-                <option key={s} value={s}>Talla {s}</option>
+                <option key={s} value={s}>Talla {s} COL</option>
               ))}
             </select>
           </label>

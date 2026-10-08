@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Trash2, ArrowRight, ShieldCheck, Truck, ShoppingBag, Tag, Check, Minus, Plus } from 'lucide-react';
 import { BRAND_INFO } from '../data/catalog';
+import { formatPrice } from '../utils/format';
 
 export interface CartItem {
   id: string;
@@ -40,7 +41,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const freeShippingThreshold = BRAND_INFO.freeShippingFrom;
   const difference = freeShippingThreshold - subtotal;
-  const shippingCost = difference <= 0 ? 0 : 4.95;
+  const shippingCost = difference <= 0 ? 0 : BRAND_INFO.shippingCost;
   const shippingProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
   const discountAmount = subtotal * appliedDiscount;
   const finalTotal = subtotal - discountAmount + shippingCost;
@@ -85,7 +86,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 {difference <= 0 ? (
                   <span>¡Tienes envío gratis! 🎉</span>
                 ) : (
-                  <span>Te faltan <strong className="text-grape">${difference.toFixed(2)}</strong> para el envío gratis</span>
+                  <span>Te faltan <strong className="text-grape">{formatPrice(difference)}</strong> para el envío gratis</span>
                 )}
               </p>
               <div className="h-3 bg-white border-2 border-ink rounded-full overflow-hidden">
@@ -145,7 +146,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           <Plus className="w-3.5 h-3.5" strokeWidth={3} />
                         </button>
                       </div>
-                      <span className="font-display text-lg font-extrabold">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-display text-lg font-extrabold">{formatPrice((item.price * item.quantity))}</span>
                     </div>
                   </div>
                 </div>
@@ -186,21 +187,21 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <dl className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <dt>Subtotal</dt>
-                  <dd>${subtotal.toFixed(2)}</dd>
+                  <dd>{formatPrice(subtotal)}</dd>
                 </div>
                 {appliedDiscount > 0 && (
                   <div className="flex justify-between font-bold text-grape">
                     <dt>Descuento (10%)</dt>
-                    <dd>-${discountAmount.toFixed(2)}</dd>
+                    <dd>-{formatPrice(discountAmount)}</dd>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <dt>Envío</dt>
-                  <dd>{difference <= 0 ? <strong>GRATIS</strong> : '$4.95'}</dd>
+                  <dd>{difference <= 0 ? <strong>GRATIS</strong> : formatPrice(BRAND_INFO.shippingCost)}</dd>
                 </div>
                 <div className="flex justify-between font-display text-2xl font-extrabold pt-2 border-t-2 border-ink">
                   <dt>Total</dt>
-                  <dd>${finalTotal.toFixed(2)}</dd>
+                  <dd>{formatPrice(finalTotal)}</dd>
                 </div>
               </dl>
 
@@ -213,7 +214,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </button>
               <p className="flex items-center justify-center gap-1.5 text-xs text-ink/60">
                 <ShieldCheck className="w-4 h-4" />
-                Pago seguro · o 3 cuotas de ${(finalTotal / 3).toFixed(2)} sin intereses
+                Pago seguro · o 3 cuotas de {formatPrice((finalTotal / 3))} sin intereses
               </p>
             </div>
           )}

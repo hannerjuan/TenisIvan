@@ -6,18 +6,18 @@ interface SizeGuideModalProps {
   onClose: () => void;
 }
 
-// Foot length (cm) that each EU size fits
+// Foot length (cm) that each Colombian size fits, with EU/US equivalents
 const SIZE_CHART = [
-  { eu: '36', us: '4.5', cm: 22.5 },
-  { eu: '37', us: '5', cm: 23.5 },
-  { eu: '38', us: '6', cm: 24 },
-  { eu: '39', us: '6.5', cm: 25 },
-  { eu: '40', us: '7', cm: 25.5 },
-  { eu: '41', us: '8', cm: 26.5 },
-  { eu: '42', us: '8.5', cm: 27 },
-  { eu: '43', us: '9.5', cm: 28 },
-  { eu: '44', us: '10', cm: 28.5 },
-  { eu: '45', us: '11', cm: 29.5 }
+  { col: '35', eu: '36', us: '4.5', cm: 22.5 },
+  { col: '36', eu: '37', us: '5', cm: 23.5 },
+  { col: '37', eu: '38', us: '6', cm: 24 },
+  { col: '38', eu: '39', us: '6.5', cm: 25 },
+  { col: '39', eu: '40', us: '7', cm: 25.5 },
+  { col: '40', eu: '41', us: '8', cm: 26.5 },
+  { col: '41', eu: '42', us: '8.5', cm: 27 },
+  { col: '42', eu: '43', us: '9.5', cm: 28 },
+  { col: '43', eu: '44', us: '10', cm: 28.5 },
+  { col: '44', eu: '45', us: '11', cm: 29.5 }
 ];
 
 export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose }) => {
@@ -85,13 +85,14 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
           {recommended && (
             <p className="p-4 bg-lime border-2 border-ink rounded-2xl font-bold flex items-center gap-2" role="status">
               <Check className="w-5 h-5 shrink-0" strokeWidth={3} />
-              Tu talla recomendada es la <span className="font-display text-2xl font-extrabold">{recommended.eu} EU</span>
+              Tu talla colombiana es la <span className="font-display text-2xl font-extrabold">{recommended.col}</span> (EU {recommended.eu})
             </p>
           )}
 
           <table className="w-full text-sm text-center border-2 border-ink rounded-2xl overflow-hidden border-separate border-spacing-0">
             <thead className="bg-ink text-white">
               <tr>
+                <th className="py-2">COL</th>
                 <th className="py-2">EU</th>
                 <th className="py-2">US</th>
                 <th className="py-2">Pie (cm)</th>
@@ -99,7 +100,8 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({ isOpen, onClose 
             </thead>
             <tbody>
               {SIZE_CHART.map((row) => (
-                <tr key={row.eu} className={recommended?.eu === row.eu ? 'bg-lime font-extrabold' : 'odd:bg-white'}>
+                <tr key={row.col} className={recommended?.col === row.col ? 'bg-lime font-extrabold' : 'odd:bg-white'}>
+                  <td className="py-1.5">{row.col}</td>
                   <td className="py-1.5">{row.eu}</td>
                   <td className="py-1.5">{row.us}</td>
                   <td className="py-1.5">{row.cm}</td>

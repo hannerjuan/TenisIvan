@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Star, ArrowUpRight } from 'lucide-react';
 import { Product } from '../types';
+import { formatPrice } from '../utils/format';
 
 interface ProductCardProps {
   product: Product;
@@ -77,9 +78,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
         <div className="mt-auto pt-3 flex items-end justify-between gap-2">
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="font-display text-2xl font-extrabold">${product.price.toFixed(2)}</span>
+              <span className="font-display text-2xl font-extrabold">{formatPrice(product.price)}</span>
               {product.originalPrice && (
-                <span className="text-sm text-ink/40 line-through">${product.originalPrice.toFixed(2)}</span>
+                <span className="text-sm text-ink/40 line-through">{formatPrice(product.originalPrice)}</span>
               )}
             </div>
             <div className="flex items-center gap-1 mt-1" aria-label={`${product.colors.length} colores`}>

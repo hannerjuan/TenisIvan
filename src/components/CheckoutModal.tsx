@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Check, ShieldCheck, Truck, CreditCard, Lock, ArrowRight } from 'lucide-react';
 import { CartItem } from './CartDrawer';
+import { formatPrice } from '../utils/format';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -103,8 +104,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           {step === 'shipping' && (
             <form onSubmit={handleSubmitShipping} className="space-y-4 text-sm">
               <div className="p-4 bg-white border-2 border-ink rounded-2xl flex flex-wrap gap-2 items-center justify-between">
-                <span>Total a abonar: <strong>${total.toFixed(2)}</strong> ({pairCount} {pairCount === 1 ? 'par' : 'pares'})</span>
-                <span className="bg-lime border-2 border-ink rounded-full px-3 py-0.5 text-xs font-extrabold">{shippingCost === 0 ? 'Envío GRATIS' : 'Envío $4.95'}</span>
+                <span>Total a abonar: <strong>{formatPrice(total)}</strong> ({pairCount} {pairCount === 1 ? 'par' : 'pares'})</span>
+                <span className="bg-lime border-2 border-ink rounded-full px-3 py-0.5 text-xs font-extrabold">{shippingCost === 0 ? 'Envío GRATIS' : `Envío ${formatPrice(shippingCost)}`}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -140,7 +141,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="tel"
                     required
                     value={formData.phone}
-                    placeholder="+34 600 000 000"
+                    placeholder="+57 300 123 4567"
                     autoComplete="tel"
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
@@ -153,7 +154,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.address}
-                    placeholder="Calle, número, piso"
+                    placeholder="Ej. Calle 85 # 11-53, apto 302"
                     autoComplete="street-address"
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
@@ -166,7 +167,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.city}
-                    placeholder="Ciudad"
+                    placeholder="Ej. Bogotá"
                     autoComplete="address-level2"
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
@@ -179,7 +180,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.postalCode}
-                    placeholder="Ej. 28013"
+                    placeholder="Ej. 110111"
                     autoComplete="postal-code"
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                     className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
@@ -230,7 +231,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   >
                     <span className="font-black text-rose-500 text-sm block mb-1">Klarna.</span>
                     <span className="font-bold text-ink block">3 Cuotas sin interés</span>
-                    <span className="text-[10px] text-ink/60">3x ${(total / 3).toFixed(2)}/mes</span>
+                    <span className="text-[10px] text-ink/60">3x {formatPrice((total / 3))}/mes</span>
                   </button>
 
                   <button
@@ -298,7 +299,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   className="px-6 py-3 bg-lime border-2 border-ink font-extrabold rounded-full flex items-center gap-2 shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
-                  Pagar ${total.toFixed(2)} Ahora
+                  Pagar {formatPrice(total)} Ahora
                 </button>
               </div>
             </form>

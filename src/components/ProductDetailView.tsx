@@ -17,6 +17,7 @@ import {
   Plus
 } from 'lucide-react';
 import { SizeGuideModal } from './SizeGuideModal';
+import { formatPrice } from '../utils/format';
 
 interface ProductDetailViewProps {
   currentProduct: Product;
@@ -63,7 +64,7 @@ const TABS = [
 ] as const;
 
 const defaultSize = (product: Product) =>
-  product.sizes.find((s) => s.size === '40 EU' && s.available)?.size ??
+  product.sizes.find((s) => s.size === '39' && s.available)?.size ??
   product.sizes.find((s) => s.available)?.size ??
   product.sizes[0].size;
 
@@ -214,17 +215,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-baseline gap-3">
-            <span className="font-display text-5xl font-extrabold">${currentProduct.price.toFixed(2)}</span>
+            <span className="font-display text-5xl font-extrabold">{formatPrice(currentProduct.price)}</span>
             {currentProduct.originalPrice && (
               <>
-                <span className="text-xl text-ink/40 line-through">${currentProduct.originalPrice.toFixed(2)}</span>
+                <span className="text-xl text-ink/40 line-through">{formatPrice(currentProduct.originalPrice)}</span>
                 <span className="text-sm font-extrabold bg-bubble text-white border-2 border-ink rounded-full px-3 py-1 -rotate-3">
                   Ahorras {discountPercent}%
                 </span>
               </>
             )}
             <p className="w-full text-sm text-ink/70">
-              O 3 cuotas de <strong className="text-ink">${(currentProduct.price / 3).toFixed(2)}</strong> sin intereses.
+              O 3 cuotas de <strong className="text-ink">{formatPrice((currentProduct.price / 3))}</strong> sin intereses.
             </p>
           </div>
 
@@ -259,7 +260,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           {/* Size */}
           <fieldset className="space-y-3">
             <div className="flex items-center justify-between">
-              <legend className="text-sm font-extrabold">Talla (EU)</legend>
+              <legend className="text-sm font-extrabold">Talla (Colombia)</legend>
               <button
                 type="button"
                 onClick={() => setIsSizeGuideOpen(true)}
@@ -286,7 +287,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                     }`}
                     aria-pressed={active}
                   >
-                    {s.size.replace(' EU', '')}
+                    {s.size}
                     {s.available && s.stockCount !== undefined && s.stockCount <= 3 && (
                       <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-bubble border-2 border-ink" aria-label="Pocas unidades" />
                     )}
@@ -354,7 +355,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
           <ul className="grid grid-cols-3 gap-2 text-xs font-bold text-center">
             {[
-              { icon: Truck, text: `Envío gratis desde $${BRAND_INFO.freeShippingFrom}` },
+              { icon: Truck, text: `Envío gratis desde ${formatPrice(BRAND_INFO.freeShippingFrom)}` },
               { icon: RotateCcw, text: '30 días para cambios' },
               { icon: ShieldCheck, text: 'Pago 100% seguro' }
             ].map(({ icon: Icon, text }) => (
@@ -431,7 +432,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <span className="space-y-1">
                   <span className="block text-xs font-extrabold uppercase tracking-wider text-grape">{p.subcategory}</span>
                   <span className="block font-display text-2xl font-extrabold">{p.title}</span>
-                  <span className="block font-bold">${p.price.toFixed(2)}</span>
+                  <span className="block font-bold">{formatPrice(p.price)}</span>
                 </span>
               </button>
             ))}
