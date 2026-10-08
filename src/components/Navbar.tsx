@@ -22,7 +22,7 @@ const ANNOUNCEMENTS = [
   `Envío gratis desde ${formatPrice(BRAND_INFO.freeShippingFrom)}`,
   '30 días para cambiar de talla',
   `-10% en tu primer par con ${BRAND_INFO.welcomeCode}`,
-  'Paga con PSE, Nequi o tarjeta'
+  'Pide fácil por WhatsApp'
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({

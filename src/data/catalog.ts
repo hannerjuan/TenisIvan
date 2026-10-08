@@ -6,7 +6,9 @@ export const BRAND_INFO = {
   /** Prices are in Colombian pesos (COP) */
   freeShippingFrom: 250000,
   shippingCost: 15000,
-  welcomeCode: 'BIENVENIDA10'
+  welcomeCode: 'BIENVENIDA10',
+  /** Orders are closed over WhatsApp: country code + number, digits only */
+  whatsappNumber: '573228251892'
 };
 
 export const SNEAKER_STYLES: SneakerStyle[] = [

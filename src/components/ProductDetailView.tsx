@@ -160,7 +160,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </>
             )}
             <p className="w-full text-sm text-ink/70">
-              Paga con <strong className="text-ink">PSE, Nequi o tarjeta</strong>.
+              Termina tu pedido por <strong className="text-ink">WhatsApp</strong>.
             </p>
           </div>
 
