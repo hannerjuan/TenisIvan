@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Heart, ShoppingBag, Trash2 } from 'lucide-react';
+import { X, Heart, Trash2, ArrowRight } from 'lucide-react';
 import { Product } from '../types';
 
 interface WishlistDrawerProps {
@@ -8,7 +8,6 @@ interface WishlistDrawerProps {
   favorites: Product[];
   onRemoveFavorite: (id: string) => void;
   onSelectProduct: (product: Product) => void;
-  onAddToCart: (product: Product, size: string, colorName: string, image: string) => void;
 }
 
 export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
@@ -16,99 +15,77 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
   onClose,
   favorites,
   onRemoveFavorite,
-  onSelectProduct,
-  onAddToCart
+  onSelectProduct
 }) => {
   if (!isOpen) return null;
 
+  const openProduct = (product: Product) => {
+    onSelectProduct(product);
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-ink/60 backdrop-blur-xs" onClick={onClose} />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div role="dialog" aria-modal="true" aria-label="Favoritos" className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
-          {/* Header */}
-          <div className="p-5 border-b border-stone-200 flex items-center justify-between bg-stone-50">
-            <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-rose-600 fill-current" />
-              <h2 className="font-display font-semibold text-stone-900 text-base">
-                Tus Favoritos ({favorites.length})
-              </h2>
-            </div>
+        <div role="dialog" aria-modal="true" aria-label="Favoritos" className="w-screen max-w-md bg-cream border-l-2 border-ink flex flex-col">
+          <div className="px-5 py-4 border-b-2 border-ink bg-bubble text-white flex items-center justify-between">
+            <h2 className="font-display text-2xl font-extrabold flex items-center gap-2">
+              <Heart className="w-6 h-6 fill-current" />
+              Favoritos ({favorites.length})
+            </h2>
             <button
               onClick={onClose}
               aria-label="Cerrar favoritos"
-              className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
+              className="w-10 h-10 rounded-full bg-white text-ink border-2 border-ink flex items-center justify-center hover:rotate-90 transition-transform cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-3">
             {favorites.length === 0 ? (
-              <div className="text-center py-20 space-y-3">
-                <div className="w-12 h-12 mx-auto rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
-                  <Heart className="w-6 h-6" />
-                </div>
-                <h3 className="font-display font-medium text-stone-800 text-sm">
-                  Aún no tienes prendas guardadas
-                </h3>
-                <p className="text-xs text-stone-500 max-w-xs mx-auto">
-                  Haz clic en el corazón de cualquier prenda para guardarla y comprarla después.
+              <div className="text-center py-16 space-y-4">
+                <span className="mx-auto w-16 h-16 rounded-2xl bg-bubble-soft border-2 border-ink flex items-center justify-center rotate-6">
+                  <Heart className="w-7 h-7" />
+                </span>
+                <h3 className="font-display text-2xl font-extrabold">Aún no tienes favoritos</h3>
+                <p className="text-sm text-ink/70 max-w-xs mx-auto">
+                  Toca el corazón de cualquier par para guardarlo y comprarlo después.
                 </p>
               </div>
             ) : (
               favorites.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex gap-4 p-3 rounded-xl border border-stone-200 hover:border-stone-300 transition-colors bg-white"
-                >
-                  <img
-                    src={product.heroImage}
-                    alt={product.title}
-                    onClick={() => {
-                      onSelectProduct(product);
-                      onClose();
-                    }}
-                    className="w-20 h-24 object-cover rounded-lg bg-stone-100 cursor-pointer shrink-0"
-                  />
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-1">
-                        <h4 
-                          onClick={() => {
-                            onSelectProduct(product);
-                            onClose();
-                          }}
-                          className="text-xs font-semibold text-stone-900 line-clamp-1 hover:text-stone-700 cursor-pointer"
-                        >
-                          {product.title}
-                        </h4>
-                        <button
-                          onClick={() => onRemoveFavorite(product.id)}
-                          className="text-stone-400 hover:text-rose-600 p-0.5 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                <div key={product.id} className="flex gap-3 p-3 rounded-3xl border-2 border-ink bg-white">
+                  <button
+                    onClick={() => openProduct(product)}
+                    className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-ink cursor-pointer"
+                    style={{ backgroundColor: product.cardColor }}
+                    aria-label={`Ver ${product.title}`}
+                  >
+                    <img src={product.heroImage} alt="" className="w-full h-full object-cover" />
+                  </button>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className="font-display text-lg font-extrabold leading-tight truncate">{product.title}</h3>
+                        <p className="text-sm font-bold">${product.price.toFixed(2)}</p>
                       </div>
-                      <p className="text-[11px] text-stone-500 line-clamp-1 mt-0.5">{product.subtitle}</p>
-                      <p className="text-xs font-bold text-stone-900 mt-1">${product.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => onRemoveFavorite(product.id)}
+                        className="w-8 h-8 shrink-0 rounded-full hover:bg-bubble-soft flex items-center justify-center cursor-pointer"
+                        aria-label={`Quitar ${product.title} de favoritos`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-
                     <button
-                      onClick={() => {
-                        const defaultSize = product.sizes[0]?.size || 'M';
-                        const defaultColor = product.colors[0];
-                        onAddToCart(product, defaultSize, defaultColor.name, defaultColor.image);
-                      }}
-                      className="w-full py-1.5 px-3 bg-stone-900 hover:bg-stone-800 text-white text-[11px] font-medium rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      onClick={() => openProduct(product)}
+                      className="self-start inline-flex items-center gap-1.5 px-4 py-2 bg-ink text-white rounded-full text-sm font-extrabold hover:bg-grape transition-colors cursor-pointer"
                     >
-                      <ShoppingBag className="w-3 h-3" />
-                      Mover a la Bolsa
+                      Elegir talla
+                      <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

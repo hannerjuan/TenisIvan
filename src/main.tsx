@@ -7,7 +7,7 @@ import './index.css';
 const IMAGE_FALLBACK =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><rect width="400" height="500" fill="#e7e5e4"/><path d="M170 215h60l10 15h25v75h-130v-75h25z" fill="none" stroke="#a8a29e" stroke-width="8" stroke-linejoin="round"/><circle cx="200" cy="268" r="20" fill="none" stroke="#a8a29e" stroke-width="8"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500"><path d="M170 215h60l10 15h25v75h-130v-75h25z" fill="none" stroke="#17131f" stroke-opacity="0.25" stroke-width="8" stroke-linejoin="round"/><circle cx="200" cy="268" r="20" fill="none" stroke="#17131f" stroke-opacity="0.25" stroke-width="8"/></svg>'
   );
 
 document.addEventListener(

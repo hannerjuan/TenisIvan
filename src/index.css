@@ -1,31 +1,69 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+
+  /* TenisIvan palette */
+  --color-ink: #17131f;
+  --color-cream: #fff8ee;
+  --color-grape: #7c3aed;
+  --color-grape-soft: #e4dcff;
+  --color-lime: #c6f432;
+  --color-lime-soft: #e6fbb0;
+  --color-bubble: #ff4f9a;
+  --color-bubble-soft: #ffd6e7;
+  --color-sun: #ffd23f;
+  --color-sun-soft: #fff1b8;
+  --color-pool: #5cc8ff;
+  --color-pool-soft: #c9ecff;
+  --color-tangerine: #ff8a3d;
+
+  /* Offset "sticker" shadows */
+  --shadow-pop-sm: 2px 2px 0 0 var(--color-ink);
+  --shadow-pop: 4px 4px 0 0 var(--color-ink);
+  --shadow-pop-lg: 7px 7px 0 0 var(--color-ink);
+
+  --animate-marquee: marquee 28s linear infinite;
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1c1917;
+    font-family: var(--font-sans);
+    background-color: var(--color-cream);
+    color: var(--color-ink);
   }
   h1, h2, h3, .font-display {
-    font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-grape);
+    outline-offset: 2px;
   }
 }
 
-/* Custom scrollbars for clean fashion look */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d6d3d1;
+  background: var(--color-ink);
   border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
 }

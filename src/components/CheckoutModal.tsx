@@ -47,6 +47,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   if (!isOpen) return null;
 
   const total = subtotal - discountAmount + shippingCost;
+  const pairCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
   // Reset to the first step so a new purchase never reopens on the success screen
   const handleClose = () => {
@@ -61,26 +62,26 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   const handleProcessPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    const generatedOrder = `NOMAD-${Math.floor(100000 + Math.random() * 900000)}`;
+    const generatedOrder = `TIVAN-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderNumber(generatedOrder);
     setStep('success');
     onCompleteOrder();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs">
       <div 
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
-        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-stone-200 animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-cream rounded-[2rem] shadow-pop-lg overflow-hidden border-2 border-ink"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50">
+        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-ink bg-grape text-white">
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-emerald-600" />
-            <h3 id="checkout-title" className="font-display text-base font-bold text-stone-900">
+            <Lock className="w-5 h-5 text-lime" />
+            <h3 id="checkout-title" className="font-display text-xl font-extrabold">
               {step === 'shipping' && 'Paso 1 de 2: Dirección de Envío'}
               {step === 'payment' && 'Paso 2 de 2: Método de Pago Seguro'}
               {step === 'success' && '¡Pedido Confirmado con Éxito!'}
@@ -90,7 +91,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <button
               onClick={handleClose}
               aria-label="Cerrar checkout"
-              className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg transition-colors cursor-pointer"
+              className="w-10 h-10 rounded-full bg-white text-ink border-2 border-ink flex items-center justify-center hover:rotate-90 transition-transform cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -100,15 +101,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         {/* Content */}
         <div className="p-6 max-h-[80vh] overflow-y-auto">
           {step === 'shipping' && (
-            <form onSubmit={handleSubmitShipping} className="space-y-4 text-xs">
-              <div className="p-3 bg-stone-100 rounded-lg text-stone-700 flex items-center justify-between">
-                <span>Total a abonar: <strong>${total.toFixed(2)}</strong> ({items.reduce((acc, i) => acc + i.quantity, 0)} prendas)</span>
-                <span className="text-emerald-700 font-semibold">{shippingCost === 0 ? 'Envío Express GRATIS' : 'Envío $4.95'}</span>
+            <form onSubmit={handleSubmitShipping} className="space-y-4 text-sm">
+              <div className="p-4 bg-white border-2 border-ink rounded-2xl flex flex-wrap gap-2 items-center justify-between">
+                <span>Total a abonar: <strong>${total.toFixed(2)}</strong> ({pairCount} {pairCount === 1 ? 'par' : 'pares'})</span>
+                <span className="bg-lime border-2 border-ink rounded-full px-3 py-0.5 text-xs font-extrabold">{shippingCost === 0 ? 'Envío GRATIS' : 'Envío $4.95'}</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-stone-700 font-semibold mb-1">Nombre Completo *</label>
+                  <label className="block font-bold mb-1">Nombre Completo *</label>
                   <input
                     type="text"
                     required
@@ -116,12 +117,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="Ej. Ana García"
                     autoComplete="name"
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Email de confirmación *</label>
+                  <label className="block font-bold mb-1">Email de confirmación *</label>
                   <input
                     type="email"
                     required
@@ -129,12 +130,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="tu@email.com"
                     autoComplete="email"
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Teléfono móvil *</label>
+                  <label className="block font-bold mb-1">Teléfono móvil *</label>
                   <input
                     type="tel"
                     required
@@ -142,12 +143,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="+34 600 000 000"
                     autoComplete="tel"
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-stone-700 font-semibold mb-1">Dirección de entrega *</label>
+                  <label className="block font-bold mb-1">Dirección de entrega *</label>
                   <input
                     type="text"
                     required
@@ -155,12 +156,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="Calle, número, piso"
                     autoComplete="street-address"
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Ciudad *</label>
+                  <label className="block font-bold mb-1">Ciudad *</label>
                   <input
                     type="text"
                     required
@@ -168,12 +169,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="Ciudad"
                     autoComplete="address-level2"
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-stone-700 font-semibold mb-1">Código Postal *</label>
+                  <label className="block font-bold mb-1">Código Postal *</label>
                   <input
                     type="text"
                     required
@@ -181,7 +182,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     placeholder="Ej. 28013"
                     autoComplete="postal-code"
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
+                    className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                   />
                 </div>
               </div>
@@ -189,7 +190,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div className="pt-4 flex items-center justify-end">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-lg flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 bg-lime border-2 border-ink font-extrabold rounded-full flex items-center gap-2 shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
                 >
                   Continuar al Pago
                   <ArrowRight className="w-4 h-4" />
@@ -199,99 +200,104 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           )}
 
           {step === 'payment' && (
-            <form onSubmit={handleProcessPayment} className="space-y-4 text-xs">
+            <form onSubmit={handleProcessPayment} className="space-y-4 text-sm">
               <div className="space-y-2">
-                <label className="block text-stone-800 font-semibold">Elige cómo quieres pagar:</label>
+                <label className="block font-extrabold">Elige cómo quieres pagar:</label>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, paymentMethod: 'card' })}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                    className={`p-4 rounded-2xl border-2 border-ink text-left cursor-pointer transition-all ${
                       formData.paymentMethod === 'card'
-                        ? 'border-stone-900 bg-stone-50 ring-2 ring-stone-900/10'
-                        : 'border-stone-200 hover:border-stone-300'
+                        ? 'bg-lime shadow-pop -translate-y-0.5'
+                        : 'bg-white hover:bg-lime-soft'
                     }`}
                   >
-                    <CreditCard className="w-5 h-5 text-stone-800 mb-1" />
-                    <span className="font-bold text-stone-900 block">Tarjeta Bancaria</span>
-                    <span className="text-[10px] text-stone-500">Visa, Mastercard</span>
+                    <CreditCard className="w-5 h-5 text-ink mb-1" />
+                    <span className="font-bold text-ink block">Tarjeta Bancaria</span>
+                    <span className="text-[10px] text-ink/60">Visa, Mastercard</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, paymentMethod: 'klarna' })}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                    className={`p-4 rounded-2xl border-2 border-ink text-left cursor-pointer transition-all ${
                       formData.paymentMethod === 'klarna'
-                        ? 'border-stone-900 bg-stone-50 ring-2 ring-stone-900/10'
-                        : 'border-stone-200 hover:border-stone-300'
+                        ? 'bg-lime shadow-pop -translate-y-0.5'
+                        : 'bg-white hover:bg-lime-soft'
                     }`}
                   >
                     <span className="font-black text-rose-500 text-sm block mb-1">Klarna.</span>
-                    <span className="font-bold text-stone-900 block">3 Cuotas sin interés</span>
-                    <span className="text-[10px] text-stone-500">3x ${(total / 3).toFixed(2)}/mes</span>
+                    <span className="font-bold text-ink block">3 Cuotas sin interés</span>
+                    <span className="text-[10px] text-ink/60">3x ${(total / 3).toFixed(2)}/mes</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, paymentMethod: 'paypal' })}
-                    className={`p-3 rounded-xl border text-left cursor-pointer transition-all ${
+                    className={`p-4 rounded-2xl border-2 border-ink text-left cursor-pointer transition-all ${
                       formData.paymentMethod === 'paypal'
-                        ? 'border-stone-900 bg-stone-50 ring-2 ring-stone-900/10'
-                        : 'border-stone-200 hover:border-stone-300'
+                        ? 'bg-lime shadow-pop -translate-y-0.5'
+                        : 'bg-white hover:bg-lime-soft'
                     }`}
                   >
                     <span className="font-bold text-blue-600 text-sm block mb-1">PayPal</span>
-                    <span className="font-bold text-stone-900 block">1 Clic Seguro</span>
-                    <span className="text-[10px] text-stone-500">Sin meter tarjeta</span>
+                    <span className="font-bold text-ink block">1 Clic Seguro</span>
+                    <span className="text-[10px] text-ink/60">Sin meter tarjeta</span>
                   </button>
                 </div>
               </div>
 
               {formData.paymentMethod === 'card' && (
-                <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3">
+                <div className="p-4 bg-white rounded-2xl border-2 border-ink space-y-3">
                   <div>
-                    <label className="block text-stone-700 font-semibold mb-1">Número de Tarjeta</label>
+                    <label className="block font-bold mb-1">Número de Tarjeta</label>
                     <input
                       type="text"
-                      defaultValue="4532 •••• •••• 8892"
-                      className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-stone-800 font-mono"
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      placeholder="1234 5678 9012 3456"
+                      className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-stone-700 font-semibold mb-1">Caducidad</label>
+                      <label className="block font-bold mb-1">Caducidad</label>
                       <input
                         type="text"
-                        defaultValue="08/28"
-                        className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-stone-800 font-mono"
+                        autoComplete="cc-exp"
+                        placeholder="MM/AA"
+                        className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-stone-700 font-semibold mb-1">CVC / CVV</label>
+                      <label className="block font-bold mb-1">CVC / CVV</label>
                       <input
                         type="text"
-                        defaultValue="921"
-                        className="w-full px-3 py-2 bg-white border border-stone-300 rounded-lg text-stone-800 font-mono"
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        placeholder="123"
+                        className="w-full px-4 py-2.5 bg-white border-2 border-ink rounded-2xl focus:outline-hidden focus:shadow-pop-sm"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="pt-4 border-t border-stone-200 flex items-center justify-between">
+              <div className="pt-4 border-t-2 border-ink flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setStep('shipping')}
-                  className="text-stone-600 hover:text-stone-900 font-medium"
+                  className="font-bold underline underline-offset-4 hover:text-grape cursor-pointer"
                 >
                   Volver a Dirección
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-lg flex items-center gap-2 cursor-pointer shadow-md"
+                  className="px-6 py-3 bg-lime border-2 border-ink font-extrabold rounded-full flex items-center gap-2 shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
                 >
-                  <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                  <Lock className="w-4 h-4" />
                   Pagar ${total.toFixed(2)} Ahora
                 </button>
               </div>
@@ -300,27 +306,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
           {step === 'success' && (
             <div className="text-center py-6 space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
-                <Check className="w-8 h-8" />
+              <div className="w-20 h-20 rounded-full bg-lime border-2 border-ink shadow-pop mx-auto flex items-center justify-center -rotate-6">
+                <Check className="w-10 h-10" strokeWidth={3} />
               </div>
 
               <div className="space-y-1">
-                <h4 className="font-display text-xl font-bold text-stone-900">
+                <h4 className="font-display text-3xl font-extrabold">
                   ¡Gracias por tu compra, {formData.name.split(' ')[0]}!
                 </h4>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-ink/60">
                   Hemos enviado la confirmación y el comprobante a <strong>{formData.email}</strong>.
                 </p>
               </div>
 
-              <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl max-w-sm mx-auto text-xs space-y-1.5 text-stone-700">
+              <div className="p-4 bg-white border-2 border-ink rounded-2xl max-w-sm mx-auto text-sm space-y-1.5">
                 <div className="flex justify-between">
                   <span>Número de Pedido:</span>
-                  <strong className="text-stone-900 font-mono">{orderNumber}</strong>
+                  <strong className="text-ink font-mono">{orderNumber}</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Entrega estimada:</span>
-                  <strong className="text-emerald-700">En 24-48 horas</strong>
+                  <strong className="text-grape">En 24-48 horas</strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Dirección:</span>
@@ -331,9 +337,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <div className="pt-2">
                 <button
                   onClick={handleClose}
-                  className="px-6 py-2.5 bg-stone-900 text-white font-semibold rounded-lg text-xs hover:bg-stone-800 transition-colors cursor-pointer"
+                  className="px-6 py-3 bg-ink text-white font-extrabold rounded-full hover:bg-grape transition-colors cursor-pointer"
                 >
-                  Seguir Comprando en NOMAD
+                  Seguir comprando
                 </button>
               </div>
             </div>
