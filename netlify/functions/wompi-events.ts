@@ -1,6 +1,6 @@
 import { getWompiConfig, verifyEventChecksum, WompiEvent } from '../../server/wompi';
-import { applyTransaction } from '../../server/orders';
-import { ordersStore } from '../../server/store';
+import { applyTransaction, WompiTransaction } from '../../server/orders';
+import { catalogStore, ordersStore } from '../../server/store';
 
 /**
  * Webhook Wompi calls when a transaction changes state. This is the source of truth for
@@ -25,7 +25,7 @@ export default async (req: Request) => {
   }
 
   if (event.event === 'transaction.updated' && event.data.transaction) {
-    const order = await applyTransaction(ordersStore(), event.data.transaction as Parameters<typeof applyTransaction>[1]);
+    const order = await applyTransaction({ orders: ordersStore(), catalog: catalogStore() }, event.data.transaction as WompiTransaction);
     console.log('wompi event', order?.reference ?? 'unknown order', order?.status);
   }
   return new Response('ok', { status: 200 });

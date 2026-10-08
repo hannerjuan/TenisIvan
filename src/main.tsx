@@ -1,5 +1,6 @@
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import { CatalogProvider } from './context/CatalogContext';
 import './index.css';
 
 // Swap any product photo that fails to load (expired CDN link, offline) for a neutral
@@ -21,4 +22,8 @@ document.addEventListener(
   true
 );
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <CatalogProvider>
+    <App />
+  </CatalogProvider>
+);

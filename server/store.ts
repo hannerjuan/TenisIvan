@@ -1,5 +1,9 @@
 import { getStore } from '@netlify/blobs';
-import type { OrderStore } from './orders';
+import type { JsonStore } from './kv';
 
-/** Orders live in a Netlify Blobs store; strong consistency so the webhook sees fresh orders */
-export const ordersStore = (): OrderStore => getStore({ name: 'orders', consistency: 'strong' });
+/** Strong consistency so a read right after a write (webhook, stock) sees the new value */
+const store = (name: string) => getStore({ name, consistency: 'strong' });
+
+export const ordersStore = (): JsonStore => store('orders');
+export const catalogStore = (): JsonStore => store('catalog');
+export const imagesStore = () => store('images');

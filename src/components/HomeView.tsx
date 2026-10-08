@@ -1,7 +1,9 @@
 import React from 'react';
 import { Product } from '../types';
-import { PRODUCTS_CATALOG, SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
-import { ArrowRight, Truck, RotateCcw, CreditCard, Sparkles, Star } from 'lucide-react';
+import { SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
+import { useCatalog } from '../context/CatalogContext';
+import { isInStock, mainImage } from '../utils/inventory';
+import { ArrowRight, Truck, RotateCcw, CreditCard, Sparkles } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 import { formatPrice } from '../utils/format';
 
@@ -18,9 +20,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   favorites,
   onToggleFavorite
 }) => {
-  const hero = PRODUCTS_CATALOG.find((p) => p.isBestSeller) ?? PRODUCTS_CATALOG[0];
-  const hotPicks = PRODUCTS_CATALOG.filter((p) => p.badge).slice(0, 4);
-  const firstOfStyle = (slug: string) => PRODUCTS_CATALOG.find((p) => p.category === slug);
+  const { products } = useCatalog();
+  const available = products.filter(isInStock);
+  const hero = available.find((p) => p.featured) ?? available[0];
+  const hotPicks = [...available.filter((p) => p.featured || p.badge), ...available.filter((p) => !p.featured && !p.badge)].slice(0, 4);
+  const firstOfStyle = (slug: string) => products.find((p) => p.category === slug && mainImage(p));
 
   return (
     <div className="space-y-20 pb-20">
@@ -52,43 +56,39 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   Ver todos los tenis
                   <ArrowRight className="w-4.5 h-4.5" strokeWidth={2.5} />
                 </button>
-                <button
-                  onClick={() => onSelectProduct(hero)}
-                  className="inline-flex items-center gap-2 bg-white text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
-                >
-                  {hero.title}: {formatPrice(hero.price)}
-                </button>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-white/85">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-sun text-sun" />
-                  ))}
-                </div>
-                <span><strong className="text-white">4.8/5</strong> en más de 2.000 opiniones</span>
+                {hero && (
+                  <button
+                    onClick={() => onSelectProduct(hero)}
+                    className="inline-flex items-center gap-2 bg-white text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
+                  >
+                    {hero.title}: {formatPrice(hero.price)}
+                  </button>
+                )}
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onSelectProduct(hero)}
-              className="relative mx-auto w-full max-w-md aspect-square cursor-pointer group"
-              aria-label={`Ver ${hero.title}`}
-            >
-              <div className="absolute inset-4 rounded-[2rem] bg-sun border-2 border-ink rotate-6" aria-hidden="true" />
-              <div className="absolute inset-4 rounded-[2rem] overflow-hidden border-2 border-ink -rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-bubble-soft">
-                <img src={hero.heroImage} alt={hero.title} className="w-full h-full object-cover" />
-              </div>
-              <span className="absolute -bottom-1 -left-1 sm:left-0 bg-white text-ink border-2 border-ink rounded-2xl px-4 py-2 shadow-pop text-left">
-                <span className="block text-xs font-bold uppercase tracking-wider text-grape">Top ventas</span>
-                <span className="block font-display text-xl font-extrabold">{hero.title}</span>
-              </span>
-              {hero.originalPrice && (
-                <span className="absolute top-0 right-0 w-20 h-20 rounded-full bg-bubble text-white border-2 border-ink shadow-pop flex flex-col items-center justify-center rotate-12 font-display font-extrabold leading-none">
-                  <span className="text-2xl">-{Math.round((1 - hero.price / hero.originalPrice) * 100)}%</span>
+            {hero && (
+              <button
+                type="button"
+                onClick={() => onSelectProduct(hero)}
+                className="relative mx-auto w-full max-w-md aspect-square cursor-pointer group"
+                aria-label={`Ver ${hero.title}`}
+              >
+                <div className="absolute inset-4 rounded-[2rem] bg-sun border-2 border-ink rotate-6" aria-hidden="true" />
+                <div className="absolute inset-4 rounded-[2rem] overflow-hidden border-2 border-ink -rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-bubble-soft">
+                  <img src={mainImage(hero)} alt={hero.title} className="w-full h-full object-cover" />
+                </div>
+                <span className="absolute -bottom-1 -left-1 sm:left-0 bg-white text-ink border-2 border-ink rounded-2xl px-4 py-2 shadow-pop text-left">
+                  <span className="block text-xs font-bold uppercase tracking-wider text-grape">{hero.badge ?? 'Destacado'}</span>
+                  <span className="block font-display text-xl font-extrabold">{hero.title}</span>
                 </span>
-              )}
-            </button>
+                {hero.originalPrice && (
+                  <span className="absolute top-0 right-0 w-20 h-20 rounded-full bg-bubble text-white border-2 border-ink shadow-pop flex flex-col items-center justify-center rotate-12 font-display font-extrabold leading-none">
+                    <span className="text-2xl">-{Math.round((1 - hero.price / hero.originalPrice) * 100)}%</span>
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -148,7 +148,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {sample && (
                   <div className="m-4 aspect-[4/3] rounded-2xl overflow-hidden border-2 border-ink bg-white">
                     <img
-                      src={sample.heroImage}
+                      src={mainImage(sample)}
                       alt=""
                       loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -165,31 +165,33 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* Hot picks */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-extrabold uppercase tracking-wider text-bubble">Lo más buscado</p>
-            <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Los más hot 🔥</h2>
+      {hotPicks.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-extrabold uppercase tracking-wider text-bubble">Lo más buscado</p>
+              <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Los más hot 🔥</h2>
+            </div>
+            <button
+              onClick={() => onNavigateToCategory('all')}
+              className="inline-flex items-center gap-1.5 font-extrabold underline decoration-2 underline-offset-4 hover:text-grape cursor-pointer"
+            >
+              Ver catálogo <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => onNavigateToCategory('all')}
-            className="inline-flex items-center gap-1.5 font-extrabold underline decoration-2 underline-offset-4 hover:text-grape cursor-pointer"
-          >
-            Ver catálogo <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {hotPicks.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onSelect={onSelectProduct}
-              isFavorite={favorites.some((f) => f.id === product.id)}
-              onToggleFavorite={onToggleFavorite}
-            />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {hotPicks.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelect={onSelectProduct}
+                isFavorite={favorites.some((f) => f.id === product.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Promo banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

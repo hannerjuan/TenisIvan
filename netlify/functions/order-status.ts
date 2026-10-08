@@ -1,9 +1,8 @@
 import { getWompiConfig } from '../../server/wompi';
+import { json } from '../../server/auth';
 import { applyTransaction } from '../../server/orders';
-import { ordersStore } from '../../server/store';
+import { catalogStore, ordersStore } from '../../server/store';
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 /** Looks up a Wompi transaction after the customer is redirected back to the store */
 export default async (req: Request) => {
@@ -20,7 +19,7 @@ export default async (req: Request) => {
     data: { id: string; status: string; reference: string; amount_in_cents: number; payment_method_type?: string };
   };
   // Fetched from Wompi by the server, so it is safe to record even if the webhook is late
-  const order = await applyTransaction(ordersStore(), data);
+  const order = await applyTransaction({ orders: ordersStore(), catalog: catalogStore() }, data);
   if (!order) return json({ error: 'No encontramos el pedido.' }, 404);
 
   return json({

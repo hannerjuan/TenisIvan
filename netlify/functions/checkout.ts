@@ -1,14 +1,13 @@
 import { priceOrder, OrderError } from '../../server/order';
 import { buildCheckoutUrl, createOrderReference, getWompiConfig } from '../../server/wompi';
 import { saveOrder } from '../../server/orders';
-import { ordersStore } from '../../server/store';
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+import { readCatalog } from '../../server/catalog';
+import { catalogStore, ordersStore } from '../../server/store';
+import { json } from '../../server/auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Prices the bag on the server and returns a signed Wompi checkout URL */
+/** Prices the bag on the server, stores the order and returns a signed Wompi checkout URL */
 export default async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405);
 
@@ -36,7 +35,7 @@ export default async (req: Request) => {
   }
 
   try {
-    const { lines, totals } = priceOrder(body.items, body.couponCode);
+    const { lines, totals } = priceOrder(await readCatalog(catalogStore()), body.items, body.couponCode);
     const reference = createOrderReference();
     const now = new Date().toISOString();
     await saveOrder(ordersStore(), {

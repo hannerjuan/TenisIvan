@@ -34,7 +34,7 @@ export const startCheckout = async (items: CartItem[], couponCode: string, custo
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      items: items.map(({ productId, size, colorName, quantity }) => ({ productId, size, colorName, quantity })),
+      items: items.map(({ productId, colorId, size, quantity }) => ({ productId, colorId, size, quantity })),
       couponCode,
       customer
     })
