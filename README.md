@@ -92,3 +92,9 @@ Entra con tu `ADMIN_TOKEN`. Funciona en la tienda publicada en Netlify (en local
 - **Pedidos:** lista con productos, tallas, colores, datos de envío y estado del pago.
 
 Los productos y las fotos se guardan en Netlify Blobs; no necesitas otra base de datos.
+
+## Despliegue en Netlify
+
+La tienda se publica sola en https://tenisivan.netlify.app con cada cambio en `main`. Con el plan gratuito y el
+repo privado, Netlify solo construye commits de un único autor: si un commit lleva un co-autor (`Co-authored-by:`),
+el build queda bloqueado por "Unrecognized Git contributor".
