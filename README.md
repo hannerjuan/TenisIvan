@@ -8,7 +8,7 @@ Precios en pesos colombianos (COP) y tallas colombianas.
 - Catálogo con filtros por estilo, género y talla, búsqueda y orden por precio o valoración.
 - Ficha de producto con galería por color, selector de talla, guía de tallas (largo del pie → talla COL) y opiniones.
 - Favoritos, bolsa de compra con cupón (`BIENVENIDA10`) y envío gratis desde $ 250.000.
-- Checkout en dos pasos (envío y pago) con **PSE, Nequi y tarjeta** a través de Wompi.
+- Checkout por **WhatsApp** (+57 322 825 1892): el cliente llena sus datos y se abre WhatsApp con el resumen del pedido para acordar pago y entrega. La integración con Wompi queda en el código, sin usar.
 - Panel de administración en `/#admin`: productos, fotos, inventario por color y talla, y pedidos.
 
 ## Ejecutar en local

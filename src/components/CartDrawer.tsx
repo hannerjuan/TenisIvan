@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, ArrowRight, ShieldCheck, Truck, ShoppingBag, Tag, Check, Minus, Plus } from 'lucide-react';
+import { X, Trash2, ArrowRight, MessageCircle, Truck, ShoppingBag, Tag, Check, Minus, Plus } from 'lucide-react';
 import { BRAND_INFO } from '../data/catalog';
 import { formatPrice } from '../utils/format';
 import { calculateTotals, getDiscountRate } from '../utils/pricing';
@@ -206,12 +206,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 onClick={() => onCheckout(appliedCode)}
                 className="w-full h-14 bg-lime border-2 border-ink rounded-full font-extrabold flex items-center justify-center gap-2 shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
               >
-                Ir a pagar
+                Pedir por WhatsApp
                 <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
               </button>
               <p className="flex items-center justify-center gap-1.5 text-xs text-ink/60">
-                <ShieldCheck className="w-4 h-4" />
-                Pago seguro con PSE, Nequi o tarjeta
+                <MessageCircle className="w-4 h-4" />
+                Acordamos el pago contigo por WhatsApp
               </p>
             </div>
           )}
