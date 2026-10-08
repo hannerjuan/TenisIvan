@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Check, ShieldCheck, Truck, CreditCard, Lock, ArrowRight } from 'lucide-react';
 import { CartItem } from './CartDrawer';
 
@@ -23,19 +23,36 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 }) => {
   const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping');
   const [formData, setFormData] = useState({
-    name: 'Alex Morales',
-    email: 'alex.morales@ejemplo.com',
-    address: 'Calle Mayor 45, 3º B',
-    city: 'Madrid',
-    postalCode: '28013',
-    phone: '+34 612 345 678',
+    name: '',
+    email: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    phone: '',
     paymentMethod: 'card'
   });
   const [orderNumber, setOrderNumber] = useState('');
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setStep('shipping');
+      onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const total = subtotal - discountAmount + shippingCost;
+
+  // Reset to the first step so a new purchase never reopens on the success screen
+  const handleClose = () => {
+    setStep('shipping');
+    onClose();
+  };
 
   const handleSubmitShipping = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +70,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
         className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-stone-200 animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
@@ -60,7 +80,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50">
           <div className="flex items-center gap-2">
             <Lock className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-display text-base font-bold text-stone-900">
+            <h3 id="checkout-title" className="font-display text-base font-bold text-stone-900">
               {step === 'shipping' && 'Paso 1 de 2: Dirección de Envío'}
               {step === 'payment' && 'Paso 2 de 2: Método de Pago Seguro'}
               {step === 'success' && '¡Pedido Confirmado con Éxito!'}
@@ -68,7 +88,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           </div>
           {step !== 'success' && (
             <button
-              onClick={onClose}
+              onClick={handleClose}
+              aria-label="Cerrar checkout"
               className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -92,6 +113,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.name}
+                    placeholder="Ej. Ana García"
+                    autoComplete="name"
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -103,6 +126,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="email"
                     required
                     value={formData.email}
+                    placeholder="tu@email.com"
+                    autoComplete="email"
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -114,6 +139,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="tel"
                     required
                     value={formData.phone}
+                    placeholder="+34 600 000 000"
+                    autoComplete="tel"
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -125,6 +152,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.address}
+                    placeholder="Calle, número, piso"
+                    autoComplete="street-address"
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -136,6 +165,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.city}
+                    placeholder="Ciudad"
+                    autoComplete="address-level2"
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -147,6 +178,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="text"
                     required
                     value={formData.postalCode}
+                    placeholder="Ej. 28013"
+                    autoComplete="postal-code"
                     onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                     className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-hidden focus:border-stone-900"
                   />
@@ -297,7 +330,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div className="pt-2">
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="px-6 py-2.5 bg-stone-900 text-white font-semibold rounded-lg text-xs hover:bg-stone-800 transition-colors cursor-pointer"
                 >
                   Seguir Comprando en NOMAD

@@ -29,7 +29,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div role="dialog" aria-modal="true" aria-label="Favoritos" className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
           {/* Header */}
           <div className="p-5 border-b border-stone-200 flex items-center justify-between bg-stone-50">
             <div className="flex items-center gap-2">
@@ -40,6 +40,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar favoritos"
               className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
             >
               <X className="w-5 h-5" />

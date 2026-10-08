@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation Category Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs font-semibold">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs font-semibold whitespace-nowrap">
             <button
               onClick={() => onSelectTab('home')}
               className={`px-3 py-2 rounded-lg transition-colors cursor-pointer ${
@@ -136,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action Icons (Search + Wishlist + Bag) */}
           <div className="flex items-center gap-2">
             {/* Search input desktop */}
-            <div className="relative hidden md:block w-48 lg:w-56">
+            <div className="relative hidden md:block w-48 lg:w-40 xl:w-56">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
                 type="text"

@@ -66,7 +66,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        <div role="dialog" aria-modal="true" aria-label="Bolsa de compra" className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
           {/* Header */}
           <div className="p-5 border-b border-stone-200 flex items-center justify-between bg-stone-50/70">
             <div className="flex items-center gap-2">
@@ -140,8 +140,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </h4>
                         <button
                           onClick={() => onRemoveItem(item.id)}
-                          className="text-stone-400 hover:text-rose-600 transition-colors p-0.5 cursor-pointer"
+                          className="text-stone-400 hover:text-rose-600 transition-colors p-1.5 -m-1 cursor-pointer"
                           title="Eliminar"
+                          aria-label="Eliminar de la bolsa"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -157,7 +158,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       <div className="flex items-center border border-stone-200 rounded-md bg-stone-50 text-xs">
                         <button
                           onClick={() => onUpdateQuantity(item.id, -1)}
-                          className="px-2 py-0.5 text-stone-600 hover:text-stone-900 font-bold cursor-pointer"
+                          className="w-8 h-8 flex items-center justify-center text-stone-600 hover:text-stone-900 font-bold cursor-pointer"
                           aria-label="Disminuir"
                         >
                           -
@@ -167,7 +168,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </span>
                         <button
                           onClick={() => onUpdateQuantity(item.id, 1)}
-                          className="px-2 py-0.5 text-stone-600 hover:text-stone-900 font-bold cursor-pointer"
+                          className="w-8 h-8 flex items-center justify-center text-stone-600 hover:text-stone-900 font-bold cursor-pointer"
                           aria-label="Aumentar"
                         >
                           +

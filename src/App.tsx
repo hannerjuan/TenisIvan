@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActiveTab, Product } from './types';
 import { PRODUCTS_CATALOG } from './data/fashionData';
 import { Navbar } from './components/Navbar';
@@ -48,14 +48,24 @@ export default function App() {
 
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Close the topmost overlay with Escape
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (isCheckoutOpen) return; // the checkout resets its own step through its close button
+      setIsCartOpen(false);
+      setIsWishlistOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isCheckoutOpen]);
+
   // Cart operations
   const handleAddToCart = (product: Product, size: string, colorName: string, image: string) => {
     setCartItems(prev => {
       const existingIndex = prev.findIndex(item => item.productId === product.id && item.size === size && item.colorName === colorName);
       if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex].quantity += 1;
-        return next;
+        return prev.map((item, i) => i === existingIndex ? { ...item, quantity: item.quantity + 1 } : item);
       }
       return [
         ...prev,
@@ -94,7 +104,8 @@ export default function App() {
   // Direct Buy Now (1 click buy)
   const handleDirectBuyNow = (product: Product, size: string, colorName: string, image: string) => {
     handleAddToCart(product, size, colorName, image);
-    const subtotal = product.price;
+    // The order covers the whole bag, so the total must include what was already in it
+    const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + product.price;
     const shippingCost = subtotal >= 49 ? 0 : 4.95;
     setCheckoutTotals({
       subtotal,
