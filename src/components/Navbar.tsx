@@ -3,6 +3,7 @@ import { ActiveTab } from '../types';
 import { SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
 import { ShoppingBag, Search, Menu, X, Heart, Zap } from 'lucide-react';
 import { Logo } from './Logo';
+import { formatPrice } from '../utils/format';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -18,7 +19,7 @@ interface NavbarProps {
 }
 
 const ANNOUNCEMENTS = [
-  `Envío gratis desde $${BRAND_INFO.freeShippingFrom}`,
+  `Envío gratis desde ${formatPrice(BRAND_INFO.freeShippingFrom)}`,
   '30 días para cambiar de talla',
   `-10% en tu primer par con ${BRAND_INFO.welcomeCode}`,
   'Paga en 3 cuotas sin intereses'

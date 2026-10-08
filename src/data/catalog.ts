@@ -3,7 +3,9 @@ import { Product, ProductSize, SneakerStyle } from '../types';
 export const BRAND_INFO = {
   name: 'TenisIvan',
   tagline: 'Tenis con actitud para cada paso',
-  freeShippingFrom: 49,
+  /** Prices are in Colombian pesos (COP) */
+  freeShippingFrom: 250000,
+  shippingCost: 15000,
   welcomeCode: 'BIENVENIDA10'
 };
 
@@ -17,11 +19,12 @@ export const SNEAKER_STYLES: SneakerStyle[] = [
 
 const img = (id: string, w = 1000) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
-const EU_SIZES = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
+// Colombian sizes (one below the EU scale: COL 39 = EU 40)
+export const COL_SIZES = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44'];
 
 const buildSizes = (soldOut: string[] = [], lowStock: string[] = []): ProductSize[] =>
-  EU_SIZES.map((n) => ({
-    size: `${n} EU`,
+  COL_SIZES.map((n) => ({
+    size: n,
     available: !soldOut.includes(n),
     stockCount: lowStock.includes(n) ? 2 : 10
   }));
@@ -75,8 +78,8 @@ const products: Product[] = [
     category: 'running',
     subcategory: 'Running',
     targetGender: 'Unisex',
-    price: 119.9,
-    originalPrice: 139.9,
+    price: 479900,
+    originalPrice: 559900,
     isBestSeller: true,
     badge: 'Top ventas',
     cardColor: '#ffd6e7',
@@ -86,7 +89,7 @@ const products: Product[] = [
       { id: 'fire', name: 'Rojo Fuego', colorHex: '#e5383b', inStock: true, image: img('1542291026-7eec264c27ff') },
       { id: 'cloud', name: 'Blanco Nube', colorHex: '#f4f4f0', inStock: true, image: img('1600269452121-4f2416e55c28') }
     ],
-    sizes: buildSizes(['45'], ['38', '43']),
+    sizes: buildSizes(['44'], ['37', '42']),
     hook: 'Ligeras como una pluma y con rebote en cada zancada: tus 5K de la mañana nunca se sintieron tan fáciles.',
     storytelling: 'Diseñamos las Flux Runner para quienes corren antes del trabajo y siguen caminando todo el día. La mediasuela de espuma reactiva devuelve energía en cada paso y la malla transpirable mantiene el pie fresco incluso en verano.',
     styleBenefits: {
@@ -100,7 +103,7 @@ const products: Product[] = [
       origin: 'Diseñado por TenisIvan.',
       ecoDetails: 'Malla fabricada con un 60% de poliéster reciclado.'
     },
-    microcopyUrgency: 'Quedan pocos pares en 38 y 43.',
+    microcopyUrgency: 'Quedan pocos pares en 37 y 42.',
     lifestyleIndex: 0
   }),
   sneaker({
@@ -110,7 +113,7 @@ const products: Product[] = [
     category: 'running',
     subcategory: 'Running',
     targetGender: 'Mujer',
-    price: 99.9,
+    price: 399900,
     isNew: true,
     badge: 'Nuevo',
     cardColor: '#e6fbb0',
@@ -120,7 +123,7 @@ const products: Product[] = [
       { id: 'multi', name: 'Multicolor Pop', colorHex: '#7c3aed', inStock: true, image: img('1608231387042-66d1773070a5') },
       { id: 'blue', name: 'Azul Eléctrico', colorHex: '#2563eb', inStock: true, image: img('1551107696-a4b0c5a0d9a2') }
     ],
-    sizes: buildSizes(['44', '45'], ['36']),
+    sizes: buildSizes(['43', '44'], ['35']),
     hook: 'Una placa flexible en la mediasuela que te empuja hacia delante: más ritmo con el mismo esfuerzo.',
     storytelling: 'Las Volt Pace nacieron para quienes quieren bajar su marca personal sin renunciar a la comodidad. Su horma está pensada para pies estrechos y el talón acolchado evita rozaduras desde el primer día.',
     styleBenefits: {
@@ -143,7 +146,7 @@ const products: Product[] = [
     category: 'running',
     subcategory: 'Running',
     targetGender: 'Hombre',
-    price: 109.9,
+    price: 439900,
     cardColor: '#c9ecff',
     rating: 4.7,
     reviewCount: 203,
@@ -151,7 +154,7 @@ const products: Product[] = [
       { id: 'grey', name: 'Gris Asfalto', colorHex: '#8d99ae', inStock: true, image: img('1460353581641-37baddab0fa2') },
       { id: 'black', name: 'Negro Total', colorHex: '#1f1f1f', inStock: true, image: img('1543508282-6319a3e2621f') }
     ],
-    sizes: buildSizes(['36', '37'], ['44']),
+    sizes: buildSizes(['35', '36'], ['43']),
     hook: 'Kilómetros y kilómetros sin dolor de rodillas: el talón extra acolchado absorbe cada impacto.',
     storytelling: 'Las Aero Run son el tenis que no te falla: cómodas desde el primer día, resistentes al desgaste y con un diseño limpio que también funciona fuera del entrenamiento.',
     styleBenefits: {
@@ -164,7 +167,7 @@ const products: Product[] = [
       fitType: 'Horma amplia. Fiel a la talla.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Solo 2 pares en talla 44.',
+    microcopyUrgency: 'Solo 2 pares en talla 43.',
     lifestyleIndex: 2
   }),
   sneaker({
@@ -174,7 +177,7 @@ const products: Product[] = [
     category: 'basket',
     subcategory: 'Basket',
     targetGender: 'Unisex',
-    price: 149.9,
+    price: 599900,
     badge: 'Edición limitada',
     cardColor: '#e4dcff',
     rating: 4.9,
@@ -183,7 +186,7 @@ const products: Product[] = [
       { id: 'chicago', name: 'Rojo & Negro', colorHex: '#c1121f', inStock: true, image: img('1595341888016-a392ef81b7de') },
       { id: 'royal', name: 'Azul Royal', colorHex: '#1d4ed8', inStock: true, image: img('1607522370275-f14206abe5d3') }
     ],
-    sizes: buildSizes(['36', '45'], ['40', '41', '42']),
+    sizes: buildSizes(['35', '44'], ['39', '40', '41']),
     hook: 'El clásico de cancha que nunca pasa de moda, ahora en edición limitada.',
     storytelling: "Inspiradas en las botas de basket de mediados de los 80, las Hoop High '85 combinan piel de calidad, caña alta acolchada y una suela con pivote que funciona igual de bien en la cancha que en la calle.",
     styleBenefits: {
@@ -196,7 +199,7 @@ const products: Product[] = [
       fitType: 'Fiel a la talla. Los primeros días la piel se adapta a tu pie.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Edición limitada: quedan pocos pares en 40, 41 y 42.',
+    microcopyUrgency: 'Edición limitada: quedan pocos pares en 39, 40 y 41.',
     lifestyleIndex: 3
   }),
   sneaker({
@@ -206,8 +209,8 @@ const products: Product[] = [
     category: 'basket',
     subcategory: 'Basket',
     targetGender: 'Hombre',
-    price: 134.9,
-    originalPrice: 159.9,
+    price: 539900,
+    originalPrice: 639900,
     cardColor: '#ffdcc2',
     rating: 4.6,
     reviewCount: 145,
@@ -215,7 +218,7 @@ const products: Product[] = [
       { id: 'orange', name: 'Naranja Volcán', colorHex: '#f97316', inStock: true, image: img('1539185441755-769473a23570') },
       { id: 'white', name: 'Blanco Hueso', colorHex: '#f5f0e6', inStock: true, image: img('1600185365483-26d7a4cc7519') }
     ],
-    sizes: buildSizes(['36', '37', '38']),
+    sizes: buildSizes(['35', '36', '37']),
     hook: 'Amortiguación de cancha con un diseño que roba miradas.',
     storytelling: 'Las Fly Court Mid toman lo mejor del basket moderno, como la cámara de aire en el talón y la caña media acolchada, y lo llevan a un tenis que puedes usar todo el día.',
     styleBenefits: {
@@ -238,8 +241,8 @@ const products: Product[] = [
     category: 'retro',
     subcategory: 'Retro',
     targetGender: 'Unisex',
-    price: 89.9,
-    originalPrice: 110,
+    price: 359900,
+    originalPrice: 439900,
     badge: 'Favorito',
     cardColor: '#fff1b8',
     rating: 4.95,
@@ -249,7 +252,7 @@ const products: Product[] = [
       { id: 'white-navy', name: 'Blanco & Marino', colorHex: '#1b2a4a', inStock: true, image: img('1560769629-975ec94e6a86') },
       { id: 'all-white', name: 'Blanco Total', colorHex: '#f8f8f6', inStock: true, image: img('1549298916-b41d501d3772') }
     ],
-    sizes: buildSizes([], ['37', '43']),
+    sizes: buildSizes([], ['36', '42']),
     hook: 'El tenis blanco que combina con absolutamente todo.',
     storytelling: "Inspirados en las canchas de los 80, los Retro Court '88 tienen la estética vintage que te gusta y la comodidad que esperas hoy: plantilla de memory foam y forro transpirable. Sin periodo de adaptación.",
     styleBenefits: {
@@ -262,7 +265,7 @@ const products: Product[] = [
       fitType: 'Fiel a la talla.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Solo 2 pares en 37 y 43.',
+    microcopyUrgency: 'Solo 2 pares en 36 y 42.',
     lifestyleIndex: 1
   }),
   sneaker({
@@ -272,7 +275,7 @@ const products: Product[] = [
     category: 'urbanos',
     subcategory: 'Urbanos',
     targetGender: 'Mujer',
-    price: 79.9,
+    price: 319900,
     cardColor: '#ffd6e7',
     rating: 4.7,
     reviewCount: 188,
@@ -280,7 +283,7 @@ const products: Product[] = [
       { id: 'white', name: 'Blanco Puro', colorHex: '#ffffff', inStock: true, image: img('1600185365926-3a2ce3cdb9eb') },
       { id: 'cream', name: 'Crema', colorHex: '#f3e9d2', inStock: true, image: img('1597045566677-8cf032ed6634') }
     ],
-    sizes: buildSizes(['44', '45'], ['39']),
+    sizes: buildSizes(['43', '44'], ['38']),
     hook: 'Tu par blanco de confianza, con 3 cm extra de altura sin perder comodidad.',
     storytelling: 'Las Clean Court tienen líneas limpias, una plataforma ligera y una plantilla acolchada. Son el básico que levanta cualquier outfit.',
     styleBenefits: {
@@ -293,7 +296,7 @@ const products: Product[] = [
       fitType: 'Fiel a la talla.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Quedan pocos pares en 39.',
+    microcopyUrgency: 'Quedan pocos pares en 38.',
     lifestyleIndex: 2
   }),
   sneaker({
@@ -303,7 +306,7 @@ const products: Product[] = [
     category: 'urbanos',
     subcategory: 'Urbanos',
     targetGender: 'Unisex',
-    price: 94.9,
+    price: 379900,
     isNew: true,
     badge: 'Nuevo',
     cardColor: '#e6fbb0',
@@ -313,7 +316,7 @@ const products: Product[] = [
       { id: 'pop', name: 'Bloques Pop', colorHex: '#22c55e', inStock: true, image: img('1606107557195-0e29a4b5b4aa') },
       { id: 'grey', name: 'Gris Perla', colorHex: '#d4d4d8', inStock: true, image: img('1584735175315-9d5df23860e6') }
     ],
-    sizes: buildSizes(['36'], ['42']),
+    sizes: buildSizes(['35'], ['41']),
     hook: 'Suela chunky, colores que se notan y la sensación de caminar sobre nubes.',
     storytelling: 'Las Cloud Step mezclan la estética chunky de los 2000 con una espuma ultraligera. Pisan fuerte, pesan poco y combinan con tu lado más atrevido.',
     styleBenefits: {
@@ -336,14 +339,14 @@ const products: Product[] = [
     category: 'skate',
     subcategory: 'Skate',
     targetGender: 'Unisex',
-    price: 69.9,
+    price: 279900,
     cardColor: '#c9ecff',
     rating: 4.8,
     reviewCount: 266,
     colors: [
       { id: 'black', name: 'Negro & Blanco', colorHex: '#111111', inStock: true, image: img('1525966222134-fcfa99b8ae77') }
     ],
-    sizes: buildSizes([], ['41']),
+    sizes: buildSizes([], ['40']),
     hook: 'Agarre total sobre la tabla y estilo que aguanta cualquier caída.',
     storytelling: 'Los Kickflip Low son el skate de siempre: lona resistente, gamuza en las zonas de roce y suela waffle vulcanizada que se pega a la lija.',
     styleBenefits: {
@@ -356,7 +359,7 @@ const products: Product[] = [
       fitType: 'Fiel a la talla.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Solo 2 pares en 41.',
+    microcopyUrgency: 'Solo 2 pares en 40.',
     lifestyleIndex: 0
   }),
   sneaker({
@@ -366,7 +369,7 @@ const products: Product[] = [
     category: 'urbanos',
     subcategory: 'Urbanos',
     targetGender: 'Hombre',
-    price: 124.9,
+    price: 499900,
     cardColor: '#ffdcc2',
     rating: 4.6,
     reviewCount: 58,
@@ -374,7 +377,7 @@ const products: Product[] = [
       { id: 'sand', name: 'Arena', colorHex: '#d6b88d', inStock: true, image: img('1515955656352-a1fa3ffcd111') },
       { id: 'black', name: 'Negro Carbón', colorHex: '#262626', inStock: true, image: img('1587563871167-1ee9c731aefb') }
     ],
-    sizes: buildSizes(['36', '37'], ['45']),
+    sizes: buildSizes(['35', '36'], ['44']),
     hook: 'De la ciudad al cerro sin cambiarte de tenis.',
     storytelling: 'Las Blaze Trail tienen suela de tacos con buen agarre, refuerzos en la puntera y un estilo gorpcore que funciona igual en la oficina que en una caminata.',
     styleBenefits: {
@@ -387,7 +390,7 @@ const products: Product[] = [
       fitType: 'Horma amplia. Fiel a la talla.',
       origin: 'Diseñado por TenisIvan.'
     },
-    microcopyUrgency: 'Últimos pares en 45.',
+    microcopyUrgency: 'Últimos pares en 44.',
     lifestyleIndex: 1
   })
 ];

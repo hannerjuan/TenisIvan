@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActiveTab, Product } from './types';
-import { PRODUCTS_CATALOG } from './data/catalog';
+import { PRODUCTS_CATALOG, BRAND_INFO } from './data/catalog';
 import { Navbar } from './components/Navbar';
 import { HomeView } from './components/HomeView';
 import { CatalogView } from './components/CatalogView';
@@ -92,7 +92,7 @@ export default function App() {
     handleAddToCart(product, size, colorName, image);
     // The order covers the whole bag, so the total must include what was already in it
     const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + product.price;
-    const shippingCost = subtotal >= 49 ? 0 : 4.95;
+    const shippingCost = subtotal >= BRAND_INFO.freeShippingFrom ? 0 : BRAND_INFO.shippingCost;
     setCheckoutTotals({
       subtotal,
       discountAmount: 0,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Heart, Trash2, ArrowRight } from 'lucide-react';
 import { Product } from '../types';
+import { formatPrice } from '../utils/format';
 
 interface WishlistDrawerProps {
   isOpen: boolean;
@@ -70,7 +71,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <h3 className="font-display text-lg font-extrabold leading-tight truncate">{product.title}</h3>
-                        <p className="text-sm font-bold">${product.price.toFixed(2)}</p>
+                        <p className="text-sm font-bold">{formatPrice(product.price)}</p>
                       </div>
                       <button
                         onClick={() => onRemoveFavorite(product.id)}

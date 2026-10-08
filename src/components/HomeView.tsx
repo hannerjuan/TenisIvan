@@ -3,6 +3,7 @@ import { Product } from '../types';
 import { PRODUCTS_CATALOG, SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
 import { ArrowRight, Truck, RotateCcw, CreditCard, Sparkles, Star } from 'lucide-react';
 import { ProductCard } from './ProductCard';
+import { formatPrice } from '../utils/format';
 
 interface HomeViewProps {
   onSelectProduct: (product: Product) => void;
@@ -55,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   onClick={() => onSelectProduct(hero)}
                   className="inline-flex items-center gap-2 bg-white text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
                 >
-                  {hero.title}: ${hero.price.toFixed(2)}
+                  {hero.title}: {formatPrice(hero.price)}
                 </button>
               </div>
               <div className="flex items-center gap-2 text-sm text-white/85">
@@ -96,7 +97,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: Truck, title: 'Envío gratis', text: `En pedidos desde $${BRAND_INFO.freeShippingFrom}, en 24/48h.`, bg: 'bg-lime-soft' },
+            { icon: Truck, title: 'Envío gratis', text: `En pedidos desde ${formatPrice(BRAND_INFO.freeShippingFrom)}, en 24/48h.`, bg: 'bg-lime-soft' },
             { icon: RotateCcw, title: 'Cambios fáciles', text: '30 días para cambiar de talla sin costo.', bg: 'bg-pool-soft' },
             { icon: CreditCard, title: 'Paga a tu ritmo', text: '3 cuotas sin intereses con Klarna o PayPal.', bg: 'bg-sun-soft' }
           ].map(({ icon: Icon, title, text, bg }) => (
