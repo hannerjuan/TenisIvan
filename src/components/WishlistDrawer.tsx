@@ -54,7 +54,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                 </span>
                 <h3 className="font-display text-2xl font-extrabold">Aún no tienes favoritos</h3>
                 <p className="text-sm text-ink/70 max-w-xs mx-auto">
-                  Toca el corazón de cualquier par para guardarlo y comprarlo después.
+                  Toca el corazón de cualquier producto para guardarlo y comprarlo después.
                 </p>
               </div>
             ) : (
@@ -62,8 +62,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({
                 <div key={product.id} className="flex gap-3 p-3 rounded-3xl border-2 border-ink bg-white">
                   <button
                     onClick={() => openProduct(product)}
-                    className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-ink cursor-pointer"
-                    style={{ backgroundColor: product.cardColor }}
+                    className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-ink cursor-pointer bg-cream"
                     aria-label={`Ver ${product.title}`}
                   >
                     <img src={mainImage(product)} alt="" className="w-full h-full object-cover" />

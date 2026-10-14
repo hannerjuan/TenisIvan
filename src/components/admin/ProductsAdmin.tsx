@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, Pencil, Plus, Trash2, PackageOpen } from 'lucide-react';
 import type { Product } from '../../types';
 import { formatPrice } from '../../utils/format';
-import { LOW_STOCK_THRESHOLD, mainImage, styleName, totalUnits, unitsFor } from '../../utils/inventory';
+import { LOW_STOCK_THRESHOLD, mainImage, productLabel, totalUnits, unitsFor } from '../../utils/inventory';
 import { adminApi } from './adminApi';
 import { ProductEditor } from './ProductEditor';
 
@@ -92,7 +92,7 @@ export const ProductsAdmin: React.FC<{ token: string }> = ({ token }) => {
           const low = lowStockCount(product);
           return (
             <article key={product.id} className="flex flex-wrap sm:flex-nowrap items-center gap-4 p-3 bg-white border-2 border-ink rounded-3xl">
-              <span className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-ink" style={{ backgroundColor: product.cardColor }}>
+              <span className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-ink bg-cream">
                 {mainImage(product) && <img src={mainImage(product)} alt="" className="w-full h-full object-cover" />}
               </span>
               <div className="flex-1 min-w-0 space-y-1">
@@ -103,11 +103,11 @@ export const ProductsAdmin: React.FC<{ token: string }> = ({ token }) => {
                   </span>
                 </div>
                 <p className="text-sm text-ink/70">
-                  {styleName(product.category)} · {product.targetGender} · {formatPrice(product.price)} · {product.colors.length}{' '}
+                  {productLabel(product)} · {formatPrice(product.price)} · {product.colors.length}{' '}
                   {product.colors.length === 1 ? 'color' : 'colores'}
                 </p>
                 <p className="text-sm font-bold">
-                  <span className={units === 0 ? 'text-bubble' : ''}>{units === 0 ? 'Sin stock' : `${units} pares`}</span>
+                  <span className={units === 0 ? 'text-bubble' : ''}>{units === 0 ? 'Sin stock' : `${units} ${units === 1 ? 'unidad' : 'unidades'}`}</span>
                   {low > 0 && <span className="text-bubble"> · {low} {low === 1 ? 'talla con pocas unidades' : 'tallas con pocas unidades'}</span>}
                 </p>
               </div>

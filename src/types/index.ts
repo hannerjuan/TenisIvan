@@ -1,4 +1,4 @@
-export type Gender = 'Unisex' | 'Mujer' | 'Hombre';
+export type Department = 'hombre' | 'mujer' | 'nino';
 
 export interface ProductColor {
   id: string;
@@ -15,24 +15,17 @@ export interface Product {
   id: string;
   title: string;
   subtitle: string;
-  /** Style slug, see SNEAKER_STYLES */
-  category: string;
-  targetGender: Gender;
+  /** Main category, see DEPARTMENTS */
+  department: Department;
+  /** Garment type (subcategory) slug, see GARMENT_TYPES */
+  garment: string;
   /** Prices in Colombian pesos */
   price: number;
   originalPrice?: number;
-  badge?: string;
   /** Shown first on the home page */
   featured?: boolean;
-  /** Background colour of the product card */
-  cardColor: string;
-  highlight?: string;
-  description: string;
-  materials?: string;
-  fit?: string;
-  care?: string;
   colors: ProductColor[];
-  /** Colombian sizes offered for this model */
+  /** Sizes offered for this product, taken from its garment type's size chart */
   sizes: string[];
   stock: StockMatrix;
   /** Hidden from the store while false */
@@ -40,11 +33,19 @@ export interface Product {
   updatedAt?: string;
 }
 
-export interface SneakerStyle {
-  slug: string;
+export interface DepartmentInfo {
+  slug: Department;
   name: string;
   tagline: string;
   color: string;
+}
+
+export type SizeChart = 'calzado' | 'superior' | 'inferior' | 'unica';
+
+export interface GarmentType {
+  slug: string;
+  name: string;
+  sizeChart: SizeChart;
 }
 
 export type ActiveTab = 'home' | 'catalog' | 'pdp';

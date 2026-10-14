@@ -1,6 +1,6 @@
 import React from 'react';
 import { Product } from '../types';
-import { SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
+import { DEPARTMENTS, BRAND_INFO } from '../data/catalog';
 import { useCatalog } from '../context/CatalogContext';
 import { isInStock, mainImage } from '../utils/inventory';
 import { ArrowRight, Truck, RotateCcw, MessageCircle, Sparkles } from 'lucide-react';
@@ -23,8 +23,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const { products } = useCatalog();
   const available = products.filter(isInStock);
   const hero = available.find((p) => p.featured) ?? available[0];
-  const hotPicks = [...available.filter((p) => p.featured || p.badge), ...available.filter((p) => !p.featured && !p.badge)].slice(0, 4);
-  const firstOfStyle = (slug: string) => products.find((p) => p.category === slug && mainImage(p));
+  const hotPicks = [...available.filter((p) => p.featured), ...available.filter((p) => !p.featured)].slice(0, 4);
+  const firstOfDepartment = (slug: string) => products.find((p) => p.department === slug && mainImage(p));
 
   return (
     <div className="space-y-20 pb-20">
@@ -41,19 +41,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 Nueva temporada 2026
               </span>
               <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[0.95]">
-                Pisa fuerte.
+                Viste fuerte.
                 <br />
                 <span className="text-lime">Pisa con estilo.</span>
               </h1>
               <p className="text-base sm:text-lg text-white/85 max-w-md">
-                Running, urbanos, basket, retro y skate. Tenis cómodos y con colores que se notan, elegidos para tu día a día.
+                Jeans, camisetas, tenis y más para hombre, mujer y niño. Prendas cómodas y con estilo, elegidas para tu día a día.
               </p>
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => onNavigateToCategory('all')}
                   className="inline-flex items-center gap-2 bg-lime text-ink border-2 border-ink rounded-full px-6 py-3.5 font-extrabold shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all cursor-pointer"
                 >
-                  Ver todos los tenis
+                  Ver todo el catálogo
                   <ArrowRight className="w-4.5 h-4.5" strokeWidth={2.5} />
                 </button>
                 {hero && (
@@ -79,7 +79,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <img src={mainImage(hero)} alt={hero.title} className="w-full h-full object-cover" />
                 </div>
                 <span className="absolute -bottom-1 -left-1 sm:left-0 bg-white text-ink border-2 border-ink rounded-2xl px-4 py-2 shadow-pop text-left">
-                  <span className="block text-xs font-bold uppercase tracking-wider text-grape">{hero.badge ?? 'Destacado'}</span>
+                  <span className="block text-xs font-bold uppercase tracking-wider text-grape">Destacado</span>
                   <span className="block font-display text-xl font-extrabold">{hero.title}</span>
                 </span>
                 {hero.originalPrice && (
@@ -114,12 +114,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* Shop by style */}
+      {/* Shop by department */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-extrabold uppercase tracking-wider text-grape">Elige tu vibra</p>
-            <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Compra por estilo</h2>
+            <p className="text-sm font-extrabold uppercase tracking-wider text-grape">Para toda la familia</p>
+            <h2 className="font-display text-4xl sm:text-5xl font-extrabold">Compra por categoría</h2>
           </div>
           <button
             onClick={() => onNavigateToCategory('all')}
@@ -129,16 +129,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {SNEAKER_STYLES.map((style, i) => {
-            const sample = firstOfStyle(style.slug);
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {DEPARTMENTS.map((style) => {
+            const sample = firstOfDepartment(style.slug);
             return (
               <button
                 key={style.slug}
                 onClick={() => onNavigateToCategory(style.slug)}
-                className={`group relative overflow-hidden rounded-3xl border-2 border-ink shadow-pop hover:shadow-pop-lg hover:-translate-y-1 transition-all text-left cursor-pointer ${
-                  i === 0 ? 'col-span-2 lg:col-span-1' : ''
-                }`}
+                className="group relative overflow-hidden rounded-3xl border-2 border-ink shadow-pop hover:shadow-pop-lg hover:-translate-y-1 transition-all text-left cursor-pointer"
                 style={{ backgroundColor: style.color }}
               >
                 <div className="p-4 pb-0 space-y-1">
@@ -198,10 +196,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="relative overflow-hidden rounded-[2rem] border-2 border-ink bg-sun p-8 sm:p-12 shadow-pop-lg grid md:grid-cols-[1fr_auto] gap-6 items-center">
           <div className="space-y-3">
             <h2 className="font-display text-4xl sm:text-5xl font-extrabold leading-none">
-              -10% en tu primer par
+              -10% en tu primera compra
             </h2>
             <p className="text-base font-medium text-ink/80 max-w-lg">
-              Usa el código en la bolsa y estrena tenis por menos. Válido en todo el catálogo.
+              Usa el código en la bolsa y estrena por menos. Válido en todo el catálogo.
             </p>
           </div>
           <div className="flex flex-col items-start md:items-end gap-3">

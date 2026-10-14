@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import { SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
+import { DEPARTMENTS, BRAND_INFO } from '../data/catalog';
 import { Logo } from './Logo';
 
 interface FooterProps {
@@ -17,14 +17,14 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
           <div className="md:col-span-4 space-y-4">
             <Logo inverted />
             <p className="text-white/70 max-w-sm">
-              {BRAND_INFO.tagline}. Running, urbanos, basket, retro y skate con envío rápido y cambios fáciles.
+              {BRAND_INFO.tagline}: hombre, mujer y niño, con envío rápido y cambios fáciles.
             </p>
           </div>
 
           <div className="md:col-span-3 space-y-3">
-            <h2 className="font-display text-lg font-extrabold text-lime">Estilos</h2>
+            <h2 className="font-display text-lg font-extrabold text-lime">Categorías</h2>
             <ul className="space-y-2">
-              {SNEAKER_STYLES.map((style) => (
+              {DEPARTMENTS.map((style) => (
                 <li key={style.slug}>
                   <button
                     onClick={() => onSelectCategory(style.slug)}
@@ -40,7 +40,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory }) => {
           <div className="md:col-span-5 space-y-3">
             <h2 className="font-display text-lg font-extrabold text-lime">Únete al club TenisIvan</h2>
             <p className="text-white/70">
-              Lanzamientos antes que nadie y <strong className="text-white">10% de descuento</strong> en tu primer par.
+              Lanzamientos antes que nadie y <strong className="text-white">10% de descuento</strong> en tu primera compra.
             </p>
             {subscribed ? (
               <p className="flex items-center gap-2 bg-lime text-ink rounded-full px-4 py-3 font-bold w-fit" role="status">

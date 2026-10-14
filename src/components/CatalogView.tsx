@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { SNEAKER_STYLES, COL_SIZES } from '../data/catalog';
+import { DEPARTMENTS, GARMENT_TYPES, sizesFor } from '../data/catalog';
 import { useCatalog } from '../context/CatalogContext';
-import { isInStock, isSizeAvailable, styleName } from '../utils/inventory';
+import { departmentName, garmentName, isInStock, isSizeAvailable } from '../utils/inventory';
 import { SearchX, ArrowUpDown, Ruler } from 'lucide-react';
 import { ProductCard } from './ProductCard';
 
@@ -17,7 +17,6 @@ interface CatalogViewProps {
 }
 
 type SortOption = 'featured' | 'price-asc' | 'price-desc';
-const GENDERS = ['all', 'Mujer', 'Hombre', 'Unisex'] as const;
 
 export const CatalogView: React.FC<CatalogViewProps> = ({
   onSelectProduct,
@@ -28,19 +27,29 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   favorites,
   onToggleFavorite
 }) => {
-  const [gender, setGender] = useState<(typeof GENDERS)[number]>('all');
+  const [garment, setGarment] = useState('all');
   const [size, setSize] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('featured');
 
   const { products: catalog, status } = useCatalog();
-  const activeStyle = SNEAKER_STYLES.find((s) => s.slug === categoryFilter);
+  const activeDepartment = DEPARTMENTS.find((d) => d.slug === categoryFilter);
   const query = searchQuery.trim().toLowerCase();
 
-  const products = catalog.filter((p) => {
-    if (query && ![p.title, p.subtitle, styleName(p.category)].some((field) => field.toLowerCase().includes(query))) return false;
-    if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
-    // Unisex pairs show up for everyone
-    if (gender !== 'all' && p.targetGender !== gender && p.targetGender !== 'Unisex') return false;
+  const inDepartment = catalog.filter((p) => categoryFilter === 'all' || p.department === categoryFilter);
+  // Only garment types that have something to show in this category
+  const garments = GARMENT_TYPES.filter((g) => inDepartment.some((p) => p.garment === g.slug));
+  // Size options follow the size charts of what is on screen, in chart order
+  const sizeOptions = [
+    ...new Set(
+      inDepartment
+        .filter((p) => garment === 'all' || p.garment === garment)
+        .flatMap((p) => sizesFor(p.department, p.garment).filter((s) => p.sizes.includes(s)))
+    )
+  ];
+
+  const products = inDepartment.filter((p) => {
+    if (query && ![p.title, p.subtitle, garmentName(p.garment), departmentName(p.department)].some((field) => field.toLowerCase().includes(query))) return false;
+    if (garment !== 'all' && p.garment !== garment) return false;
     if (size !== 'all' && !isSizeAvailable(p, size)) return false;
     return true;
   }).sort((a, b) => {
@@ -53,7 +62,18 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const resetFilters = () => {
     onCategoryFilterChange('all');
     onSearchChange('');
-    setGender('all');
+    setGarment('all');
+    setSize('all');
+  };
+
+  const selectDepartment = (slug: string) => {
+    onCategoryFilterChange(slug);
+    setGarment('all');
+    setSize('all');
+  };
+
+  const selectGarment = (slug: string) => {
+    setGarment(slug);
     setSize('all');
   };
 
@@ -67,32 +87,32 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       {/* Header */}
       <div
         className="rounded-[2rem] border-2 border-ink p-6 sm:p-10 shadow-pop-lg"
-        style={{ backgroundColor: activeStyle?.color ?? 'var(--color-pool)' }}
+        style={{ backgroundColor: activeDepartment?.color ?? 'var(--color-pool)' }}
       >
         <p className="text-sm font-extrabold uppercase tracking-wider">Catálogo TenisIvan</p>
         <h1 className="font-display text-5xl sm:text-6xl font-extrabold leading-none mt-1">
-          {activeStyle ? activeStyle.name : 'Todos los tenis'}
+          {activeDepartment ? activeDepartment.name : 'Todo el catálogo'}
         </h1>
         <p className="mt-3 text-base font-medium text-ink/75 max-w-xl">
-          {activeStyle ? activeStyle.tagline : 'Running, urbanos, basket, retro y skate. Encuentra el par que va contigo.'}
+          {activeDepartment ? activeDepartment.tagline : 'Ropa y tenis para hombre, mujer y niño. Encuentra lo que va contigo.'}
         </p>
       </div>
 
-      {/* Style chips */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="group" aria-label="Filtrar por estilo">
+      {/* Category chips */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0" role="group" aria-label="Filtrar por categoría">
         <button
-          onClick={() => onCategoryFilterChange('all')}
+          onClick={() => selectDepartment('all')}
           className={`${chip(categoryFilter === 'all')} ${categoryFilter === 'all' ? 'bg-ink text-white' : ''}`}
           aria-pressed={categoryFilter === 'all'}
         >
           Todos ({catalog.length})
         </button>
-        {SNEAKER_STYLES.map((style) => {
+        {DEPARTMENTS.map((style) => {
           const active = categoryFilter === style.slug;
           return (
             <button
               key={style.slug}
-              onClick={() => onCategoryFilterChange(style.slug)}
+              onClick={() => selectDepartment(style.slug)}
               className={chip(active)}
               style={active ? { backgroundColor: style.color } : undefined}
               aria-pressed={active}
@@ -105,17 +125,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       {/* Toolbar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-y-2 border-ink py-4">
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por género">
-          {GENDERS.map((g) => (
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrar por tipo de prenda">
+          {[{ slug: 'all', name: 'Todo' }, ...garments].map((g) => (
             <button
-              key={g}
-              onClick={() => setGender(g)}
+              key={g.slug}
+              onClick={() => selectGarment(g.slug)}
               className={`px-3.5 py-1.5 rounded-full text-sm font-bold border-2 transition-colors cursor-pointer ${
-                gender === g ? 'bg-grape text-white border-ink' : 'border-transparent hover:border-ink'
+                garment === g.slug ? 'bg-grape text-white border-ink' : 'border-transparent hover:border-ink'
               }`}
-              aria-pressed={gender === g}
+              aria-pressed={garment === g.slug}
             >
-              {g === 'all' ? 'Todos' : g}
+              {g.name}
             </button>
           ))}
         </div>
@@ -126,8 +146,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <span className="sr-only">Talla</span>
             <select value={size} onChange={(e) => setSize(e.target.value)} className="bg-transparent focus:outline-hidden cursor-pointer">
               <option value="all">Todas las tallas</option>
-              {COL_SIZES.map((s) => (
-                <option key={s} value={s}>Talla {s} COL</option>
+              {sizeOptions.map((s) => (
+                <option key={s} value={s}>Talla {s}</option>
               ))}
             </select>
           </label>
@@ -141,14 +161,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             </select>
           </label>
           <span className="text-sm font-bold text-ink/60" aria-live="polite">
-            {products.length} {products.length === 1 ? 'modelo' : 'modelos'}
+            {products.length} {products.length === 1 ? 'producto' : 'productos'}
           </span>
         </div>
       </div>
 
       {/* Grid */}
       {status === 'loading' ? (
-        <p className="py-16 text-center font-bold text-ink/60" role="status">Cargando tenis...</p>
+        <p className="py-16 text-center font-bold text-ink/60" role="status">Cargando productos...</p>
       ) : status === 'error' ? (
         <p className="py-16 text-center font-bold" role="alert">No pudimos cargar el catálogo. Recarga la página en un momento.</p>
       ) : products.length === 0 ? (
@@ -156,8 +176,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           <span className="mx-auto w-16 h-16 rounded-2xl bg-bubble-soft border-2 border-ink flex items-center justify-center rotate-6">
             <SearchX className="w-7 h-7" />
           </span>
-          <h2 className="font-display text-3xl font-extrabold">Ups, no hay tenis así</h2>
-          <p className="text-ink/70">Prueba con otra talla, otro estilo o limpia la búsqueda.</p>
+          <h2 className="font-display text-3xl font-extrabold">Ups, no hay productos así</h2>
+          <p className="text-ink/70">Prueba con otra talla, otro tipo de prenda o limpia la búsqueda.</p>
           <button
             onClick={resetFilters}
             className="px-6 py-3 bg-lime border-2 border-ink rounded-full font-extrabold shadow-pop-sm hover:shadow-pop transition-shadow cursor-pointer"

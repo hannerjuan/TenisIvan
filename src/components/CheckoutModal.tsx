@@ -95,7 +95,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           {step === 'details' && (
             <form onSubmit={handleSendOrder} className="space-y-4 text-sm">
               <div className="p-4 bg-white border-2 border-ink rounded-2xl flex flex-wrap gap-2 items-center justify-between">
-                <span>Total: <strong>{formatPrice(total)}</strong> ({pairCount} {pairCount === 1 ? 'par' : 'pares'})</span>
+                <span>Total: <strong>{formatPrice(total)}</strong> ({pairCount} {pairCount === 1 ? 'producto' : 'productos'})</span>
                 <span className="bg-lime border-2 border-ink rounded-full px-3 py-0.5 text-xs font-extrabold">{shippingCost === 0 ? 'Envío GRATIS' : `Envío ${formatPrice(shippingCost)}`}</span>
               </div>
 
