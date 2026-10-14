@@ -1,23 +1,35 @@
 import { randomBytes } from 'node:crypto';
-import type { Gender, Product, ProductColor, StockMatrix } from '../src/types';
-import { SNEAKER_STYLES, COL_SIZES } from '../src/data/catalog';
+import type { Department, Product, ProductColor, StockMatrix } from '../src/types';
+import { DEPARTMENTS, GARMENT_TYPES, sizesFor } from '../src/data/catalog';
 import { JsonStore, updateJSON } from './kv';
 
 const CATALOG_KEY = 'products';
 
 export class ValidationError extends Error {}
 
+/**
+ * Products saved before the switch to departments and garment types had a sneaker style in `category`,
+ * a gender in `targetGender` and a few copy fields that no longer exist: they become Tenis for Mujer or Hombre.
+ */
+export const migrateProduct = (stored: Product): Product => {
+  if (stored.department && stored.garment) return stored;
+  const { category, targetGender, badge, cardColor, highlight, description, materials, fit, care, ...rest } = stored as Product &
+    Record<'category' | 'targetGender' | 'badge' | 'cardColor' | 'highlight' | 'description' | 'materials' | 'fit' | 'care', unknown>;
+  return { ...rest, department: targetGender === 'Mujer' ? 'mujer' : 'hombre', garment: 'tenis' };
+};
+
+const readStored = (data: unknown) => ((data as Product[] | undefined) ?? []).map(migrateProduct);
+
 export const readCatalog = async (store: JsonStore): Promise<Product[]> => {
   const current = await store.getWithMetadata(CATALOG_KEY, { type: 'json' });
-  return (current?.data as Product[] | undefined) ?? [];
+  return readStored(current?.data);
 };
 
 export const updateCatalog = (store: JsonStore, mutate: (products: Product[]) => Product[]) =>
-  updateJSON<Product[]>(store, CATALOG_KEY, (current) => mutate(current ?? [])).then((p) => p ?? []);
+  updateJSON<Product[]>(store, CATALOG_KEY, (current) => mutate(readStored(current))).then((p) => p ?? []);
 
 // ---------- validation of products sent by the admin panel ----------
 
-const GENDERS: Gender[] = ['Unisex', 'Mujer', 'Hombre'];
 const HEX_RE = /^#[0-9a-f]{6}$/i;
 const ID_RE = /^[a-z0-9-]{1,60}$/;
 const IMAGE_RE = /^(https:\/\/|\/api\/images\/)[^\s"'<>]+$/;
@@ -49,16 +61,16 @@ export const sanitizeProduct = (input: unknown): Product => {
   const raw = (input ?? {}) as Record<string, unknown>;
   const title = text(raw.title, 'el nombre', { required: true, max: 80 });
 
-  const category = String(raw.category ?? '');
-  if (!SNEAKER_STYLES.some((s) => s.slug === category)) throw new ValidationError('Elige un estilo válido.');
-  const targetGender = raw.targetGender as Gender;
-  if (!GENDERS.includes(targetGender)) throw new ValidationError('Elige un género válido.');
+  const department = raw.department as Department;
+  if (!DEPARTMENTS.some((d) => d.slug === department)) throw new ValidationError('Elige una categoría válida: Hombre, Mujer o Niño.');
+  const garment = String(raw.garment ?? '');
+  if (!GARMENT_TYPES.some((g) => g.slug === garment)) throw new ValidationError('Elige un tipo de prenda válido.');
 
   const price = pesos(raw.price, 'El precio');
   const originalPrice = raw.originalPrice === undefined || raw.originalPrice === null || raw.originalPrice === '' ? undefined : pesos(raw.originalPrice, 'El precio anterior');
   if (originalPrice !== undefined && originalPrice <= price) throw new ValidationError('El precio anterior debe ser mayor que el precio actual.');
 
-  const sizes = Array.isArray(raw.sizes) ? COL_SIZES.filter((s) => (raw.sizes as unknown[]).includes(s)) : [];
+  const sizes = Array.isArray(raw.sizes) ? sizesFor(department, garment).filter((s) => (raw.sizes as unknown[]).includes(s)) : [];
   if (!sizes.length) throw new ValidationError('Elige al menos una talla.');
 
   const rawColors = Array.isArray(raw.colors) ? raw.colors : [];
@@ -86,25 +98,16 @@ export const sanitizeProduct = (input: unknown): Product => {
     }
   }
 
-  const cardColor = HEX_RE.test(String(raw.cardColor ?? '')) ? String(raw.cardColor) : '#fff1b8';
-  const optional = (value: unknown, field: string, max?: number) => text(value, field, { max }) || undefined;
 
   return {
     id: ID_RE.test(String(raw.id ?? '')) ? String(raw.id) : `${slugify(title)}-${randomBytes(2).toString('hex')}`,
     title,
     subtitle: text(raw.subtitle, 'la descripción corta', { max: 140 }),
-    category,
-    targetGender,
+    department,
+    garment,
     price,
     originalPrice,
-    badge: optional(raw.badge, 'la etiqueta', 24),
     featured: raw.featured === true,
-    cardColor,
-    highlight: optional(raw.highlight, 'la frase destacada', 240),
-    description: text(raw.description, 'la descripción', { max: 1500 }),
-    materials: optional(raw.materials, 'los materiales', 400),
-    fit: optional(raw.fit, 'la horma', 240),
-    care: optional(raw.care, 'los cuidados', 600),
     colors,
     sizes,
     stock,

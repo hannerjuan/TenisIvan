@@ -99,7 +99,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <ShoppingBag className="w-7 h-7" />
                 </span>
                 <h3 className="font-display text-2xl font-extrabold">Tu bolsa está vacía</h3>
-                <p className="text-sm text-ink/70 max-w-xs mx-auto">Elige tus próximos tenis y aparecerán aquí.</p>
+                <p className="text-sm text-ink/70 max-w-xs mx-auto">Elige tus próximas prendas y aparecerán aquí.</p>
                 <button
                   onClick={onClose}
                   className="px-6 py-3 bg-ink text-white rounded-full font-extrabold hover:bg-grape transition-colors cursor-pointer"

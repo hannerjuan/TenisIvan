@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { ArrowLeft, ImagePlus, Loader2, Plus, Trash2, X, ChevronLeft } from 'lucide-react';
-import type { Gender, Product, ProductColor } from '../../types';
-import { CARD_COLORS, COL_SIZES, SNEAKER_STYLES } from '../../data/catalog';
+import type { Department, Product, ProductColor } from '../../types';
+import { DEPARTMENTS, GARMENT_TYPES, sizesFor } from '../../data/catalog';
 import { adminApi, resizeImage } from './adminApi';
 
 interface ProductEditorProps {
@@ -17,13 +17,11 @@ const emptyProduct = (): Product => ({
   id: '',
   title: '',
   subtitle: '',
-  category: SNEAKER_STYLES[0].slug,
-  targetGender: 'Unisex',
+  department: 'hombre',
+  garment: 'tenis',
   price: 0,
-  cardColor: CARD_COLORS[0],
-  description: '',
   colors: [{ id: newColorId(), name: '', colorHex: '#ffffff', images: [] }],
-  sizes: [...COL_SIZES],
+  sizes: [...sizesFor('hombre', 'tenis')],
   stock: {},
   published: false
 });
@@ -60,11 +58,22 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ token, product, on
       return { ...d, colors: d.colors.filter((c) => c.id !== colorId), stock };
     });
 
+  const sizeOptions = sizesFor(draft.department, draft.garment);
+
   const toggleSize = (size: string) =>
     setDraft((d) => ({
       ...d,
-      sizes: d.sizes.includes(size) ? d.sizes.filter((s) => s !== size) : COL_SIZES.filter((s) => s === size || d.sizes.includes(s))
+      sizes: d.sizes.includes(size) ? d.sizes.filter((s) => s !== size) : sizeOptions.filter((s) => s === size || d.sizes.includes(s))
     }));
+
+  // A new category or garment type can change the size chart (S/M/L, waist, shoe sizes...): keep the sizes that still exist
+  const setClassification = (patch: Partial<Pick<Product, 'department' | 'garment'>>) =>
+    setDraft((d) => {
+      const next = { ...d, ...patch };
+      const options = sizesFor(next.department, next.garment);
+      const kept = options.filter((s) => d.sizes.includes(s));
+      return { ...next, sizes: kept.length ? kept : [...options] };
+    });
 
   const setUnits = (colorId: string, size: string, value: string) => {
     const units = Math.max(0, Math.floor(Number(value) || 0));
@@ -158,23 +167,23 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ token, product, on
         <h3 className="font-display text-2xl font-extrabold">Información</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nombre *" className="sm:col-span-2">
-            <input required maxLength={80} value={draft.title} onChange={(e) => set('title', e.target.value)} className={inputClass} placeholder="Ej. Flux Runner" />
+            <input required maxLength={80} value={draft.title} onChange={(e) => set('title', e.target.value)} className={inputClass} placeholder="Ej. Jean slim azul" />
           </Field>
           <Field label="Descripción corta" hint="Se ve debajo del nombre y en las tarjetas." className="sm:col-span-2">
-            <input maxLength={140} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} className={inputClass} placeholder="Ej. Malla ligera y espuma reactiva para correr" />
+            <input maxLength={140} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} className={inputClass} placeholder="Ej. Tela stretch, tiro medio" />
           </Field>
-          <Field label="Estilo">
-            <select value={draft.category} onChange={(e) => set('category', e.target.value)} className={inputClass}>
-              {SNEAKER_STYLES.map((s) => (
-                <option key={s.slug} value={s.slug}>{s.name}</option>
+          <Field label="Categoría *">
+            <select value={draft.department} onChange={(e) => setClassification({ department: e.target.value as Department })} className={inputClass}>
+              {DEPARTMENTS.map((d) => (
+                <option key={d.slug} value={d.slug}>{d.name}</option>
               ))}
             </select>
           </Field>
-          <Field label="Para">
-            <select value={draft.targetGender} onChange={(e) => set('targetGender', e.target.value as Gender)} className={inputClass}>
-              <option value="Unisex">Unisex</option>
-              <option value="Mujer">Mujer</option>
-              <option value="Hombre">Hombre</option>
+          <Field label="Tipo de prenda *" hint="Define las tallas disponibles.">
+            <select value={draft.garment} onChange={(e) => setClassification({ garment: e.target.value })} className={inputClass}>
+              {GARMENT_TYPES.map((g) => (
+                <option key={g.slug} value={g.slug}>{g.name}</option>
+              ))}
             </select>
           </Field>
           <Field label="Precio (COP) *">
@@ -183,25 +192,6 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ token, product, on
           <Field label="Precio anterior (COP)" hint="Opcional. Si lo pones, se muestra tachado como descuento.">
             <input type="number" min={1} step={1} inputMode="numeric" value={draft.originalPrice ?? ''} onChange={(e) => set('originalPrice', e.target.value ? Number(e.target.value) : undefined)} className={inputClass} />
           </Field>
-          <Field label="Etiqueta" hint="Opcional, ej. Nuevo, Edición limitada.">
-            <input maxLength={24} value={draft.badge ?? ''} onChange={(e) => set('badge', e.target.value || undefined)} className={inputClass} />
-          </Field>
-          <fieldset className="space-y-1.5">
-            <legend className="text-sm font-extrabold">Color de la tarjeta</legend>
-            <div className="flex flex-wrap gap-2">
-              {CARD_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => set('cardColor', color)}
-                  className={`w-10 h-10 rounded-full border-2 border-ink cursor-pointer ${draft.cardColor === color ? 'ring-4 ring-grape ring-offset-2' : ''}`}
-                  style={{ backgroundColor: color }}
-                  aria-label={`Color de tarjeta ${color}`}
-                  aria-pressed={draft.cardColor === color}
-                />
-              ))}
-            </div>
-          </fieldset>
         </div>
         <div className="flex flex-wrap gap-6 pt-2">
           <label className="inline-flex items-center gap-2 font-bold cursor-pointer">
@@ -290,18 +280,18 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ token, product, on
       <section className={sectionClass}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-display text-2xl font-extrabold">Tallas e inventario</h3>
-          <span className="px-3 py-1 bg-sun border-2 border-ink rounded-full text-sm font-extrabold">{totalUnits} pares en total</span>
+          <span className="px-3 py-1 bg-sun border-2 border-ink rounded-full text-sm font-extrabold">{totalUnits} unidades en total</span>
         </div>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-extrabold">Tallas que ofreces (Colombia)</legend>
+          <legend className="text-sm font-extrabold">Tallas que ofreces</legend>
           <div className="flex flex-wrap gap-2">
-            {COL_SIZES.map((size) => (
+            {sizeOptions.map((size) => (
               <button
                 key={size}
                 type="button"
                 onClick={() => toggleSize(size)}
-                className={`w-12 h-11 rounded-2xl border-2 border-ink font-extrabold cursor-pointer ${draft.sizes.includes(size) ? 'bg-ink text-lime' : 'bg-white text-ink/40'}`}
+                className={`min-w-12 h-11 px-2 rounded-2xl border-2 border-ink font-extrabold cursor-pointer ${draft.sizes.includes(size) ? 'bg-ink text-lime' : 'bg-white text-ink/40'}`}
                 aria-pressed={draft.sizes.includes(size)}
               >
                 {size}
@@ -356,28 +346,6 @@ export const ProductEditor: React.FC<ProductEditorProps> = ({ token, product, on
               ))}
             </tbody>
           </table>
-        </div>
-      </section>
-
-      {/* Copy */}
-      <section className={sectionClass}>
-        <h3 className="font-display text-2xl font-extrabold">Textos de la ficha</h3>
-        <Field label="Frase destacada" hint="Opcional. Aparece resaltada junto al precio.">
-          <input maxLength={240} value={draft.highlight ?? ''} onChange={(e) => set('highlight', e.target.value || undefined)} className={inputClass} />
-        </Field>
-        <Field label="Descripción">
-          <textarea rows={4} maxLength={1500} value={draft.description} onChange={(e) => set('description', e.target.value)} className={inputClass} />
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Materiales">
-            <textarea rows={2} maxLength={400} value={draft.materials ?? ''} onChange={(e) => set('materials', e.target.value || undefined)} className={inputClass} />
-          </Field>
-          <Field label="Horma / calce">
-            <textarea rows={2} maxLength={240} value={draft.fit ?? ''} onChange={(e) => set('fit', e.target.value || undefined)} className={inputClass} placeholder="Ej. Fiel a la talla" />
-          </Field>
-          <Field label="Cuidados" className="sm:col-span-2">
-            <textarea rows={2} maxLength={600} value={draft.care ?? ''} onChange={(e) => set('care', e.target.value || undefined)} className={inputClass} />
-          </Field>
         </div>
       </section>
 

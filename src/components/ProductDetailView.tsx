@@ -5,7 +5,7 @@ import { useCatalog } from '../context/CatalogContext';
 import { Ruler, Heart, ShoppingBag, Truck, RotateCcw, ShieldCheck, Check, ChevronLeft, Zap, Minus, Plus } from 'lucide-react';
 import { SizeGuideModal } from './SizeGuideModal';
 import { formatPrice } from '../utils/format';
-import { LOW_STOCK_THRESHOLD, isInStock, mainImage, styleName, unitsFor } from '../utils/inventory';
+import { LOW_STOCK_THRESHOLD, garmentName, isInStock, mainImage, productLabel, unitsFor } from '../utils/inventory';
 
 interface ProductDetailViewProps {
   currentProduct: Product;
@@ -16,11 +16,6 @@ interface ProductDetailViewProps {
   onToggleFavorite: (product: Product) => void;
   onBackToCatalog: () => void;
 }
-
-const TABS = [
-  { id: 'descripcion', label: 'Descripción' },
-  { id: 'detalles', label: 'Detalles' }
-] as const;
 
 /** First colour with stock, and in it the size closest to a common 39 */
 const defaultSelection = (product: Product) => {
@@ -44,7 +39,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]['id']>('descripcion');
   const [addedToast, setAddedToast] = useState(false);
 
   useEffect(() => {
@@ -62,10 +56,12 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   const discountPercent = currentProduct.originalPrice
     ? Math.round(((currentProduct.originalPrice - currentProduct.price) / currentProduct.originalPrice) * 100)
     : 0;
-  const pairings = [
-    ...products.filter((p) => p.id !== currentProduct.id && p.category === currentProduct.category),
-    ...products.filter((p) => p.id !== currentProduct.id && p.category !== currentProduct.category)
-  ]
+  // Same category and garment type first, then the rest of the category, then everything else
+  const relevance = (p: typeof currentProduct) =>
+    Number(p.department === currentProduct.department) * 2 + Number(p.garment === currentProduct.garment);
+  const pairings = products
+    .filter((p) => p.id !== currentProduct.id)
+    .sort((a, b) => relevance(b) - relevance(a))
     .filter(isInStock)
     .slice(0, 2);
 
@@ -84,11 +80,8 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     setTimeout(() => setAddedToast(false), 2500);
   };
 
-  const details = [
-    { label: 'Materiales', value: currentProduct.materials },
-    { label: 'Horma', value: currentProduct.fit },
-    { label: 'Cuidados', value: currentProduct.care }
-  ].filter((d) => d.value);
+  // The size guide converts foot length to adult Colombian shoe sizes
+  const hasSizeGuide = currentProduct.garment === 'tenis' && currentProduct.department !== 'nino';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-14">
@@ -104,8 +97,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         {/* Gallery */}
         <div className="lg:col-span-7 space-y-4">
           <div
-            className="relative rounded-[2rem] overflow-hidden border-2 border-ink shadow-pop-lg aspect-square"
-            style={{ backgroundColor: currentProduct.cardColor }}
+            className="relative rounded-[2rem] overflow-hidden border-2 border-ink shadow-pop-lg aspect-square bg-white"
           >
             {activeImage && (
               <img src={activeImage} alt={`${currentProduct.title} en ${selectedColor.name}`} className="w-full h-full object-cover" />
@@ -121,7 +113,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   className={`aspect-square rounded-2xl overflow-hidden border-2 border-ink transition-all cursor-pointer ${
                     activeImageIndex === idx ? 'shadow-pop -translate-y-0.5' : 'opacity-70 hover:opacity-100'
                   }`}
-                  style={{ backgroundColor: currentProduct.cardColor }}
                   aria-label={`Ver foto ${idx + 1}`}
                   aria-pressed={activeImageIndex === idx}
                 >
@@ -137,13 +128,8 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-extrabold uppercase tracking-wider bg-grape-soft border-2 border-ink rounded-full px-3 py-1">
-                {styleName(currentProduct.category)} · {currentProduct.targetGender}
+                {productLabel(currentProduct)}
               </span>
-              {currentProduct.badge && (
-                <span className="text-xs font-extrabold uppercase tracking-wider bg-sun border-2 border-ink rounded-full px-3 py-1">
-                  {currentProduct.badge}
-                </span>
-              )}
             </div>
             <h1 className="font-display text-5xl sm:text-6xl font-extrabold leading-none">{currentProduct.title}</h1>
             {currentProduct.subtitle && <p className="text-lg text-ink/70">{currentProduct.subtitle}</p>}
@@ -163,10 +149,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               Termina tu pedido por <strong className="text-ink">WhatsApp</strong>.
             </p>
           </div>
-
-          {currentProduct.highlight && (
-            <p className="p-4 rounded-2xl border-2 border-ink bg-lime-soft font-medium">{currentProduct.highlight}</p>
-          )}
 
           {/* Colour */}
           <fieldset className="space-y-3">
@@ -196,15 +178,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           {/* Size */}
           <fieldset className="space-y-3">
             <div className="flex items-center justify-between">
-              <legend className="text-sm font-extrabold">Talla (Colombia)</legend>
-              <button
-                type="button"
-                onClick={() => setIsSizeGuideOpen(true)}
-                className="text-sm font-bold underline decoration-2 underline-offset-4 flex items-center gap-1 hover:text-grape cursor-pointer"
-              >
-                <Ruler className="w-4 h-4" />
-                Guía de tallas
-              </button>
+              <legend className="text-sm font-extrabold">Talla</legend>
+              {hasSizeGuide && (
+                <button
+                  type="button"
+                  onClick={() => setIsSizeGuideOpen(true)}
+                  className="text-sm font-bold underline decoration-2 underline-offset-4 flex items-center gap-1 hover:text-grape cursor-pointer"
+                >
+                  <Ruler className="w-4 h-4" />
+                  Guía de tallas
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-5 gap-2">
               {currentProduct.sizes.map((size) => {
@@ -239,7 +223,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             {!selectedSize && isInStock(currentProduct) && <p className="text-sm font-bold text-grape">Elige tu talla.</p>}
             {canBuy && unitsLeft <= LOW_STOCK_THRESHOLD && (
               <p className="text-sm font-bold text-bubble">
-                ¡{unitsLeft === 1 ? 'Solo queda 1 par' : `Solo quedan ${unitsLeft} pares`} en talla {selectedSize}!
+                ¡{unitsLeft === 1 ? 'Solo queda 1 unidad' : `Solo quedan ${unitsLeft} unidades`} en talla {selectedSize}!
               </p>
             )}
           </fieldset>
@@ -311,44 +295,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               </li>
             ))}
           </ul>
-
-          {(currentProduct.description || details.length > 0) && (
-            <div className="bg-white border-2 border-ink rounded-3xl overflow-hidden">
-              <div className="flex border-b-2 border-ink" role="tablist">
-                {TABS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    role="tab"
-                    aria-selected={activeTab === tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-3 text-sm font-extrabold transition-colors cursor-pointer ${
-                      activeTab === tab.id ? 'bg-sun' : 'hover:bg-cream'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              <div className="p-5 text-sm leading-relaxed" role="tabpanel">
-                {activeTab === 'descripcion' && (
-                  <p className="whitespace-pre-line">{currentProduct.description || 'Pronto agregaremos la descripción.'}</p>
-                )}
-                {activeTab === 'detalles' &&
-                  (details.length ? (
-                    <dl className="space-y-3">
-                      {details.map((d) => (
-                        <div key={d.label}>
-                          <dt className="font-extrabold">{d.label}</dt>
-                          <dd>{d.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : (
-                    <p>Pronto agregaremos más detalles.</p>
-                  ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -362,11 +308,11 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 onClick={() => onSelectProduct(p)}
                 className="flex items-center gap-4 p-3 bg-white border-2 border-ink rounded-3xl shadow-pop hover:shadow-pop-lg hover:-translate-y-0.5 transition-all text-left cursor-pointer"
               >
-                <span className="w-24 h-24 shrink-0 rounded-2xl overflow-hidden border-2 border-ink" style={{ backgroundColor: p.cardColor }}>
+                <span className="w-24 h-24 shrink-0 rounded-2xl overflow-hidden border-2 border-ink bg-cream">
                   <img src={mainImage(p)} alt="" className="w-full h-full object-cover" />
                 </span>
                 <span className="space-y-1">
-                  <span className="block text-xs font-extrabold uppercase tracking-wider text-grape">{styleName(p.category)}</span>
+                  <span className="block text-xs font-extrabold uppercase tracking-wider text-grape">{garmentName(p.garment)}</span>
                   <span className="block font-display text-2xl font-extrabold">{p.title}</span>
                   <span className="block font-bold">{formatPrice(p.price)}</span>
                 </span>

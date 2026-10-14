@@ -1,5 +1,5 @@
 import type { Product } from '../types';
-import { SNEAKER_STYLES } from '../data/catalog';
+import { DEPARTMENTS, GARMENT_TYPES } from '../data/catalog';
 
 export const LOW_STOCK_THRESHOLD = 3;
 
@@ -17,4 +17,9 @@ export const isInStock = (product: Product) => totalUnits(product) > 0;
 
 export const mainImage = (product: Product) => product.colors.find((c) => c.images.length)?.images[0] ?? '';
 
-export const styleName = (slug: string) => SNEAKER_STYLES.find((s) => s.slug === slug)?.name ?? slug;
+export const departmentName = (slug: string) => DEPARTMENTS.find((d) => d.slug === slug)?.name ?? slug;
+
+export const garmentName = (slug: string) => GARMENT_TYPES.find((g) => g.slug === slug)?.name ?? slug;
+
+/** e.g. "Jeans · Hombre" */
+export const productLabel = (product: Product) => `${garmentName(product.garment)} · ${departmentName(product.department)}`;

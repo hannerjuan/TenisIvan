@@ -2,7 +2,7 @@ import React from 'react';
 import { Heart, ArrowUpRight } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice } from '../utils/format';
-import { isInStock, mainImage, styleName } from '../utils/inventory';
+import { isInStock, mainImage, productLabel } from '../utils/inventory';
 
 interface ProductCardProps {
   product: Product;
@@ -22,8 +22,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
       <button
         type="button"
         onClick={() => onSelect(product)}
-        className="relative m-2.5 mb-0 aspect-square rounded-2xl overflow-hidden border-2 border-ink cursor-pointer text-left"
-        style={{ backgroundColor: product.cardColor }}
+        className="relative m-2.5 mb-0 aspect-square rounded-2xl overflow-hidden border-2 border-ink cursor-pointer text-left bg-cream"
         aria-label={`Ver ${product.title}`}
       >
         <img
@@ -38,11 +37,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
           </span>
         )}
         <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5">
-          {product.badge && (
-            <span className="text-[11px] font-extrabold uppercase tracking-wide bg-sun text-ink border-2 border-ink px-2 py-0.5 rounded-full shadow-pop-sm">
-              {product.badge}
-            </span>
-          )}
           {discountPercent && (
             <span className="text-[11px] font-extrabold bg-bubble text-white border-2 border-ink px-2 py-0.5 rounded-full shadow-pop-sm">
               -{discountPercent}%
@@ -67,7 +61,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, isF
 
       <div className="flex-1 flex flex-col gap-2 p-4">
         <span className="text-xs font-bold uppercase tracking-wider text-grape">
-          {styleName(product.category)} · {product.targetGender}
+          {productLabel(product)}
         </span>
 
         <h3 className="font-display text-xl font-extrabold leading-tight">

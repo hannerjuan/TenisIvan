@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActiveTab } from '../types';
-import { SNEAKER_STYLES, BRAND_INFO } from '../data/catalog';
+import { DEPARTMENTS, BRAND_INFO } from '../data/catalog';
 import { ShoppingBag, Search, Menu, X, Heart, Zap } from 'lucide-react';
 import { Logo } from './Logo';
 import { formatPrice } from '../utils/format';
@@ -21,7 +21,7 @@ interface NavbarProps {
 const ANNOUNCEMENTS = [
   `Envío gratis desde ${formatPrice(BRAND_INFO.freeShippingFrom)}`,
   '30 días para cambiar de talla',
-  `-10% en tu primer par con ${BRAND_INFO.welcomeCode}`,
+  `-10% en tu primera compra con ${BRAND_INFO.welcomeCode}`,
   'Pide fácil por WhatsApp'
 ];
 
@@ -52,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/50" />
       <input
         type="search"
-        placeholder="Busca tus tenis..."
-        aria-label="Buscar tenis"
+        placeholder="Busca ropa o tenis..."
+        aria-label="Buscar productos"
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         className="w-full pl-10 pr-4 py-2.5 text-sm font-medium bg-white border-2 border-ink rounded-full placeholder:text-ink/40 focus:outline-hidden focus:shadow-pop-sm transition-shadow"
@@ -95,8 +95,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Logo />
             </button>
 
-            <nav className="hidden lg:flex items-center gap-1.5 text-sm font-bold whitespace-nowrap" aria-label="Estilos">
-              {SNEAKER_STYLES.map((style) => (
+            <nav className="hidden lg:flex items-center gap-1.5 text-sm font-bold whitespace-nowrap" aria-label="Categorías">
+              {DEPARTMENTS.map((style) => (
                 <button
                   key={style.slug}
                   onClick={() => goToCategory(style.slug)}
@@ -163,8 +163,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {mobileMenuOpen && (
-          <nav className="lg:hidden border-t-2 border-ink bg-cream px-4 py-4 grid grid-cols-2 gap-2" aria-label="Estilos">
-            {SNEAKER_STYLES.map((style) => (
+          <nav className="lg:hidden border-t-2 border-ink bg-cream px-4 py-4 grid grid-cols-2 gap-2" aria-label="Categorías">
+            {DEPARTMENTS.map((style) => (
               <button
                 key={style.slug}
                 onClick={() => goToCategory(style.slug)}
